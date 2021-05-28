@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- 创建一个user bean -->
+    <bean id="user" class="basic.User"></bean>
+
+    <!--    set方法进行属性的注入-->
+    <bean id="book" class="basic.Book">
+        <!--  使用Property完成属性的注入-->
+        <!--        name:类里面的属性名称-->
+        <!--        value:向属性中注入的值-->
+        <property name="name" value="九阳真经"></property>
+        <property name="author" value="欧阳锋"></property>
+<!--        <property name="address">-->
+<!--            <null></null>-->
+<!--        </property>-->
+        <!-- 属性值包含特殊符号
+                1.把<>进行转义 &lt; &gt;
+                2.把带特殊符号的内容写到CDATA
+         -->
+        <property name="address">
+            <value><![CDATA[<<南京南>>]]></value>
+        </property>
+    </bean>
+
+    <!--    set方法进行属性的注入-->
+<!--    <bean id="book" class="basic.Book" p:name="易筋经" p:author="纪晓岚">-->
+<!--    </bean>-->
+
+    <bean id="order" class="basic.Order">
+        <constructor-arg name="name" value="订单名称"></constructor-arg>
+        <constructor-arg name="address" value="订单地址"></constructor-arg>
+        <!--        <constructor-arg index="0" value="订单名称"></constructor-arg>-->
+        <!--        <constructor-arg index="1" value="订单地址"></constructor-arg>-->
+    </bean>
+
+
+
+
+
+</beans>

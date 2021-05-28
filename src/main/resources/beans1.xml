@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--创建Dao对象-->
+    <bean id="userDao" class="dao.UserDaoImpl"></bean>
+
+    <!--创建Service对象-->
+    <bean id="userService" class="service.UserService">
+        <!-- name 类里面属性名称 -->
+        <!-- ref 引用类型的值，userDao在Spring容器内id的值-->
+        <property name="userDao" ref="userDao"/>
+    </bean>
+
+
+
+</beans>

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">
+
+    <!-- 提取List集合类型属性注入 -->
+    <util:list id="units">
+        <value>九阴真经</value>
+        <value>九阳神功</value>
+        <value>九九皮炎平</value>
+    </util:list>
+
+    <bean id="district" class="collection.District" scope="prototype">
+        <property name="units" ref="units"></property>
+    </bean>
+
+</beans>

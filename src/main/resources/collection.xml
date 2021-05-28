@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- 集合类型属性的注入 -->
+    <bean id="student" class="collection.Student">
+        <!--数组类型的属性注入-->
+        <property name="courses">
+            <array value-type="java.lang.String">
+                <value>英语</value>
+                <value>数学</value>
+                <value>语文</value>
+            </array>
+        </property>
+        <!-- List类型的属性注入 -->
+        <property name="list">
+            <list>
+                <value>张三</value>
+                <value>三弟</value>
+                <value>三儿</value>
+            </list>
+        </property>
+        <property name="map">
+            <map key-type="java.lang.String" value-type="java.lang.String">
+                <entry key="key1" value="value1"></entry>
+                <entry key="key2" value="value2"></entry>
+                <entry key="key3" value="value3"></entry>
+            </map>
+        </property>
+        <property name="set">
+            <set value-type="java.lang.String">
+                <value>Mysql</value>
+                <value>Redis</value>
+            </set>
+        </property>
+        <!-- 注入List<Course>，值是对象-->
+        <property name="courseList">
+            <list value-type="collection.Course">
+                <ref bean="course1"></ref>
+                <ref bean="course2"/>
+            </list>
+        </property>
+    </bean>
+
+    <!-- 创建英语课程对象 -->
+    <bean id="course1" class="collection.Course">
+        <property name="name" value="Spring5框架"></property>
+    </bean>
+
+    <bean id="course2" class="collection.Course">
+        <property name="name" value="Spring Boot框架"></property>
+    </bean>
+
+</beans>
