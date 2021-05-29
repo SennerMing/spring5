@@ -1,5 +1,6 @@
 package test;
 
+import annotation.config.SpringConfig;
 import basic.Book;
 import basic.Order;
 import basic.User;
@@ -7,10 +8,10 @@ import bean.Employee;
 import collection.District;
 import collection.Student;
 import factory.Production;
-import factory.ProductionFactory;
 import lifecycle.Person;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import service.UserService;
 
@@ -125,6 +126,32 @@ public class TestSpring {
 
         //手动让Bean实例销毁
         ((ClassPathXmlApplicationContext)context).close();
+    }
+
+    @Test
+    public void testAnnotation() {
+        //1.加载我们写的Spring的xml配置文件
+        ApplicationContext context = new ClassPathXmlApplicationContext("annotation.xml");
+        //2.获取通过配置创建的对象
+        annotation.service.UserService userService = context.getBean("userService", annotation.service.UserService.class);
+        //获取到对象并使用
+        userService.add();
+
+        //手动让Bean实例销毁
+        ((ClassPathXmlApplicationContext)context).close();
+    }
+
+    @Test
+    public void testFullAnnotation() {
+        //1.加载我们写的SpringConfig.class配置类
+        ApplicationContext context = new AnnotationConfigApplicationContext(SpringConfig.class);
+        //2.获取通过配置创建的对象
+        annotation.service.UserService userService = context.getBean("userService", annotation.service.UserService.class);
+        //获取到对象并使用
+        userService.add();
+
+        //手动让Bean实例销毁
+        ((AnnotationConfigApplicationContext)context).close();
     }
 
 

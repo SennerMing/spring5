@@ -1,3 +1,5 @@
+
+
 # Spring Framework 5
 
 ## 相关概念
@@ -18,11 +20,254 @@ Spring特点
 5. 方便进行事务管理
 6. 降低API开发的难度
 
+使用new关键词进行对象的创建，假如以后要换一种实现的方式，那么就得去new新的实现对象进行使用，这样的话对代码的维护，会特别难，那么使用工厂模式，将所有的实现交由工厂进行创建、管理与分配，那么就将使用者与业务逻辑进行了解耦，从而降低了代码维护的成本
+
+### 手写工厂
+
+对象创建的方式：
+
+1. 直接调用构造方法，创建对象
+
+2. 通过反射的形式，创建对象
+
+   Class clazz = Class.forName("club.musician.basic.User");
+
+   User user = (User)clazz.newInstance();
+
+从上面的反射的形式，进行对象的获取，就可以看出，我们已经可以将耦合降低到一个”全限定名“的字符串了，那么我们完全可以将这些”全限定名“的字符串放入一个文件中，进行单独的管理
+
+```java
+package concept;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+public class BeanFactory {
+
+    //那么，我们要将properties中的内容读取到我们的这个Properties中
+    //对资源的读取我们一般都是用IO流进行读取，像这种静态的资源，我们一般都在类初始化的时候进行内容的读取
+    private static Properties env = new Properties();
+
+    static{
+        /**
+         * 那么将耦合统一转移到了我们这个 资源文件夹，resources下面的my-application.properties中了
+         * 第一步，获取IO输入流
+         * 第二步，将properties中的内容封装到Properties中，供我们的后续使用
+         */
+        InputStream inputStream = TestAnimal.class.getResourceAsStream("/my-application.properties");
+        try {
+            env.load(inputStream);
+            inputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static Animal getAnimal() {
+        /**
+         * 我们将耦合，转移到一个小小的"全限定名"的字符串上了
+         * 那，我们完全可以将这些个"全限定名"的字符串转移到一个单独的资源文件中进行统一的管理
+         */
+        Class clazz = null;
+        try {
+            clazz = Class.forName(env.getProperty("animal"));
+            Animal animal = (Animal) clazz.newInstance();
+            animal.setAge(1);
+            animal.setName("SennerMing");
+            System.out.println(animal);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        }
+
+    }
+}
+```
+
+my-application.properties
+
+```properties
+#耦合已经统一转移到了这个小小的配置文件中了
+#我们这个properties就相当于Map 形式[{key:key1,value:value1},{key:key2,value:value2}...]
+#后续，我们就可以通过properties内置方法通过key进行value的获取，也就是对"全限定名的读取"
+animal=concept.Animal
+```
+
+那么以后我们的实现类他换了实现方式（代码逻辑变了），后续我怎么弄？我们只需要改我们配置文件中对应可key-value（全限定名）就行了！目的就是一个，解耦！
+
+但是问题来了，我们代码中还有别的代码需要进行同样的修改：
+
+```java
+package concept;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+public class BeanFactory {
+
+    //那么，我们要将properties中的内容读取到我们的这个Properties中
+    //对资源的读取我们一般都是用IO流进行读取，像这种静态的资源，我们一般都在类初始化的时候进行内容的读取
+    private static Properties env = new Properties();
+
+    static{
+        /**
+         * 那么将耦合统一转移到了我们这个 资源文件夹，resources下面的my-application.properties中了
+         * 第一步，获取IO输入流
+         * 第二步，将properties中的内容封装到Properties中，供我们的后续使用
+         */
+        InputStream inputStream = BeanFactory.class.getResourceAsStream("/my-application.properties");
+        try {
+            env.load(inputStream);
+            inputStream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static Animal getAnimal() {
+        /**
+         * 我们将耦合，转移到一个小小的"全限定名"的字符串上了
+         * 那，我们完全可以将这些个"全限定名"的字符串转移到一个单独的资源文件中进行统一的管理
+         */
+        Animal animal = null;
+        Class clazz = null;
+        try {
+            clazz = Class.forName(env.getProperty("animal"));
+            animal = (Animal) clazz.newInstance();
+            animal.setAge(1);
+            animal.setName("SennerMing");
+            System.out.println(animal);
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        }
+        return animal;
+    }
+
+    public static AnimalDao getAnimalDao() {
+        AnimalDao animalDao = null;
+
+        try {
+            Class clazz = Class.forName(env.getProperty("animalDao"));
+            animalDao = (AnimalDao) clazz.newInstance();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        }
+        return animalDao;
+    }
+
+    public static void main(String[] args) {
+        AnimalDao animalDao = BeanFactory.getAnimalDao();
+        System.out.println(animalDao);
+    }
+}
+```
+
+这个问题就来了啊，获得Animal我们写了一个函数，获取AnimalDao我们又写了一个方法，这个代码也太冗余了
+
+那么我们可以对代码进行改进
+
+```java
+public static <T> T getBean(String name, Class clazz) {
+  T obj = null;
+  try {
+    Class clazz1 = Class.forName(env.getProperty(name));
+    obj = (T) clazz1.newInstance();
+  } catch (ClassNotFoundException e) {
+    e.printStackTrace();
+  } catch (IllegalAccessException e) {
+    e.printStackTrace();
+  } catch (InstantiationException e) {
+    e.printStackTrace();
+  }
+  return obj;
+}
+```
+
+测试代码
+
+```java
+public static void main(String[] args) {
+  Animal animal = BeanFactory.getBean("animal",Animal.class);
+  System.out.println(animal);
+}
+```
+
+这样我们就对通用的工厂进行改进完毕了，Spring框架已经为我们准备好了这样的工厂，我们直接用就行了，很nice！
+
+### 小结
+
+Spring本质：工厂ApplicationContext（application-context.xml）
+
 ## 项目搭建
 
 ### 开发前准备
 
-导入基础包，beans、context、core、expression还有一个额外的commons-logging
+导入基础包，context、额外的commons-logging
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.springframework/spring-context -->
+<dependency>
+  <groupId>org.springframework</groupId>
+  <artifactId>spring-context</artifactId>
+  <version>5.3.6</version>
+</dependency>
+<!-- https://mvnrepository.com/artifact/commons-logging/commons-logging -->
+<dependency>
+  <groupId>commons-logging</groupId>
+  <artifactId>commons-logging</artifactId>
+  <version>1.2</version>
+</dependency>
+```
+
+### Spring的配置文件
+
+```markdown
+1.配置文件存放的位置：任意位置，没有硬性的要求
+2.配置文件的命名：没有硬性要求，Spring建议的名字是 applicationContext.xml
+思考：日后应用Spring框架时，需要进行配置文件路径的设置
+```
+
+### Spring的核心API
+
+ApplicationContext
+
+```markdown
+作用：Spring提供的ApplicationContext这个工厂，用于对象的创建
+好处：解耦合
+```
+
+- ApplicationContext是接口类型
+
+  ```markd
+  接口：屏蔽实现的差异
+  场景：
+  	1.非Web环境-ClassPathXmlApplicationContext；FileSystemXmlApplicationContext
+  			main函数中，Junit测试当中
+  	2.Web环境：XmlWebApplicationContext
+  ```
+
+- ApplicationContext是一个重量级的资源
+
+  ```markdown
+  ApplicationContext的工厂会占用大量的内存
+  不会频繁的创建对象：一个应用只会创建一个工厂对象
+  ApplicationContext工厂：会出现多用户多线程并发的访问，是线程安全的
+  ```
+
+  
 
 ### XML方式
 
@@ -612,9 +857,351 @@ public void testDistrict() {
 
 ### Bean的注解配置
 
-- IOC操作Bean管理（基于注解）
+- 注解的格式，@注解名称(属性名称=属性值,属性名称=属性值....)
+- 使用注解，注解作用在类上面、方法上面、属性上面
+- 使用注解的目的：简化Xml的配置，更加优雅
 
-  
+#### 创建Bean对象
+
+Spring针对Bean管理中创建对象提供的注解，四种注解：
+
+1. @Component
+2. @Service
+3. @Controller
+4. @Repository
+
+*上面四个注解的功能是一样的，都可以用来创建Bean的实例，分成四种，主要是让Programer更好的区分当前Bean在程序中所扮演的角色
+
+示例：
+
+1.首先引入AOP的依赖
+
+```xml
+<!-- https://mvnrepository.com/artifact/org.springframework/spring-aop -->
+<dependency>
+    <groupId>org.springframework</groupId>
+    <artifactId>spring-aop</artifactId>
+    <version>5.3.6</version>
+</dependency>
+```
+
+2.开启组件的扫描
+
+现在Spring配置文件中加入context标签，配置包扫描
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!-- 开启组件扫描 -->
+<!--    <context:component-scan base-package="annotation.dao annotation.service"></context:component-scan>-->
+<!--    <context:component-scan base-package="annotation.dao,annotation.service"></context:component-scan>-->
+
+    <!--
+        可以写较上层的目录
+     -->
+    <context:component-scan base-package="annotation"></context:component-scan>
+</beans>
+```
+
+```java
+package annotation.service;
+
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
+
+//等价于<bean id="userService" class="annotion.service.UserService"></bean>
+//这个value可以不写，那么默认的就是首字母小写的 userService 驼峰命名法
+//下面几个注解都可以进行Bean的创建
+//@Component(value="userService")
+//@Service(value="userService")
+//@Controller(value="userService")
+@Repository(value="userService")
+public class UserService {
+    public void add() {
+        System.out.println("UserService add()....");
+    }
+}
+
+```
+
+进行测试
+
+```java
+@Test
+public void testAnnotation() {
+  //1.加载我们写的Spring的xml配置文件
+  ApplicationContext context = new ClassPathXmlApplicationContext("annotation.xml");
+  //2.获取通过配置创建的对象
+  annotation.service.UserService userService = context.getBean("userService", annotation.service.UserService.class);
+  //获取到对象并使用
+  userService.add();
+
+  //手动让Bean实例销毁
+  ((ClassPathXmlApplicationContext)context).close();
+}
+```
+
+高阶用法
+
+```xml
+<!-- 示例
+        use-default-filters="false"，表示现在不在使用默认的filter，自己配置filter
+        context:include-filter,设置扫描那些内容
+
+        下面一大串xml的意思是：
+        在annotation包下，并不是去扫描所有的注解的类，而是去扫描带@Controller的注解进行扫描
+    -->
+<context:component-scan base-package="annotation" use-default-filters="false">
+  <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+</context:component-scan>
+
+<!-- 跟上面的正好相反，除了@Controller其他的都进行扫描 -->
+<context:component-scan base-package="annotation">
+  <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+</context:component-scan>
+```
+
+#### 属性注入
+
+##### Autowired
+
+1. @Autowired：根据属性类型进行自动装配
+
+   ```java
+   public class UserService {
+   
+       //定义Dao类型的属性
+       //不需要添加set的方法
+       //直接添加属性注解就行
+       @Autowired
+       private UserDao userDao;
+   
+       public void add() {
+           System.out.println("UserService add()....");
+           userDao.add();
+       }
+   }
+   ```
+
+   ```java
+   package annotation.dao;
+   
+   import org.springframework.stereotype.Repository;
+   
+   @Repository
+   public class UserDaoImpl implements UserDao{
+       @Override
+       public void add() {
+           System.out.println("UserDao add() ......");
+       }
+   }
+   ```
+
+   ```java
+   @Test
+   public void testAnnotation() {
+     //1.加载我们写的Spring的xml配置文件
+     ApplicationContext context = new ClassPathXmlApplicationContext("annotation.xml");
+     //2.获取通过配置创建的对象
+     annotation.service.UserService userService = context.getBean("userService", annotation.service.UserService.class);
+     //获取到对象并使用
+     userService.add();
+   
+     //手动让Bean实例销毁
+     ((ClassPathXmlApplicationContext)context).close();
+   }
+   ```
+
+##### Qualifier
+
+1. @Qualifier：根据属性名称进行注入
+
+   （1）在使用@Autowire自动注入的时候，加上@Qualifier(“test”)可以指定注入哪个对象；
+   （2）可以作为筛选的限定符，我们在做自定义注解时可以在其定义上增加@Qualifier，用来筛选需要的对象
+
+   对第一条的理解：
+
+   ```java
+   //我们定义了两个TestClass对象，分别是testClass1和testClass2
+   //我们如果在另外一个对象中直接使用@Autowire去注入的话，spring肯定不知道使用哪个对象
+   //会排除异常 required a single bean, but 2 were found
+   @Configuration
+   public class TestConfiguration {
+      @Bean("testClass1")
+      TestClass testClass1(){
+          return new TestClass("TestClass1");
+      }
+      @Bean("testClass2")
+      TestClass testClass2(){
+          return new TestClass("TestClass2");
+      }
+   }
+   ```
+
+   ```java
+   @RestController
+   public class TestController {
+   
+       //此时这两个注解的连用就类似 @Resource(name="testClass1")
+       @Autowired
+       @Qualifier("testClass1")
+       private TestClass testClass;
+   
+       @GetMapping("/test")
+       public Object test(){
+           return testClassList;
+       }
+   
+   }
+   ```
+
+   @Autowired和@Qualifier这两个注解的连用在这个位置就类似 @Resource(name=“testClass1”)
+
+   对第二条的理解：
+
+   ```java
+   @Configuration
+   public class TestConfiguration {
+       //我们调整下在testClass1上增加@Qualifier注解
+     	@Qualifier
+       @Bean("testClass1")
+       TestClass testClass1(){
+           return new TestClass("TestClass1");
+       }
+   
+       @Bean("testClass2")
+       TestClass testClass2(){
+           return new TestClass("TestClass2");
+       }
+   }
+   ```
+
+   ```java
+   @RestController
+   public class TestController {
+       //我们这里使用一个list去接收testClass的对象
+       @Autowired
+       List<TestClass> testClassList= Collections.emptyList();
+       
+       @GetMapping("/test")
+       public Object test(){
+           return testClassList;
+       }
+   }
+   ```
+
+   ```json
+   我们调用得到的结果是
+   [
+        {
+           "name": "TestClass1"
+        },
+       {
+          "name": "TestClass2"
+       }
+   ]
+   ```
+
+   在Controller的List中增加注解
+
+   ```java
+   @RestController
+   public class TestController {
+   
+       @Qualifier //我们在这增加注解
+       @Autowired
+       List<TestClass> testClassList= Collections.emptyList();
+   
+       @GetMapping("/test")
+       public Object test(){
+           return testClassList;
+       }
+   }
+   ```
+
+   和上面代码对比就是在接收参数上增加了@Qualifier注解，这样看是有什么区别，我们调用下，结果如下：
+
+   ```json
+   [
+        {
+           "name": "TestClass1"
+        }
+   ]
+   ```
+
+   返回结果只剩下增加了@Qualifier注解的TestClass对象，这样我们就可以理解官方说的标记筛选是什么意思了。
+   另外，@Qualifier注解是可以指定value的，这样我们可以通过values来分类筛选想要的对象了，这里不列举代码了，感兴趣的同学自己试试。
+
+##### Resource
+
+1. @Resource：可以根据类型注入，也可以根据名称进行注入
+
+   ```java
+   public class UserService {
+       //定义Dao类型的属性
+       //不需要添加set的方法
+       //直接添加属性注解就行
+   //    @Autowired
+   //    @Qualifier(value = "userDaoImpl1")
+   //    private UserDao userDao;
+     
+     	//都可以进行注入 他是javax包里面的注解
+   		//@Resource 
+       @Resource(name = "userDaoImpl1")
+       private UserDao userDao;
+   
+       public void add() {
+           System.out.println("UserService add()....");
+           userDao.add();
+       }
+   }
+   ```
+
+##### value
+
+1. @Value：注入普通类型属性
+
+   ```java
+   @Value(value = "SennerMing")
+   private String name;
+   ```
+
+#### 完全注解开发
+
+第一步，创建配置类，意思就是替换那个Xml配置文件
+
+```java
+//作为配置类，用以替代Xml配置文件，之前在annotation.xml中不是加了一个包扫描嘛？
+//这个就不用了，直接写在配置类上就行了！
+@Configuration
+@ComponentScan(basePackages = {"annotation"})
+public class SpringConfig {
+}
+```
+
+第二步，测试的方式要改变了
+
+```java
+@Test
+public void testFullAnnotation() {
+  //1.加载我们写的SpringConfig.class配置类
+  ApplicationContext context = new AnnotationConfigApplicationContext(SpringConfig.class);
+  //2.获取通过配置创建的对象
+  annotation.service.UserService userService = context.getBean("userService", annotation.service.UserService.class);
+  //获取到对象并使用
+  userService.add();
+
+  //手动让Bean实例销毁
+  ((AnnotationConfigApplicationContext)context).close();
+}
+```
 
 ### Bean的生命周期
 
@@ -833,5 +1420,6 @@ prop.password=*********
 
 将properties引入到Spring的配置文件当中，首先加入context标签
 
+## AOP相关
 
-
+面向切面编程，利用AOP可以对业务逻辑的各个部分进行隔离，从而使得业务逻辑各个部分各个部分之间的耦合度降低，提高程序的可重用性，同时提高了开发的效率。
