@@ -1,9 +1,6 @@
 package collection;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class Student {
 
@@ -18,6 +15,8 @@ public class Student {
     //课程的列表
     private List<Course> courseList;
 
+    private Properties properties;
+
     @Override
     public String toString() {
         return "Student{" +
@@ -26,6 +25,7 @@ public class Student {
                 ", map=" + map +
                 ", set=" + set +
                 ", courseList=" + courseList +
+                ", properties=" + properties +
                 '}';
     }
 
@@ -67,5 +67,13 @@ public class Student {
 
     public void setCourseList(List<Course> courseList) {
         this.courseList = courseList;
+    }
+
+    public Properties getProperties() {
+        return properties;
+    }
+
+    public void setProperties(Properties properties) {
+        this.properties = properties;
     }
 }

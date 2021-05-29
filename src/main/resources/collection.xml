@@ -26,6 +26,10 @@
                 <entry key="key1" value="value1"></entry>
                 <entry key="key2" value="value2"></entry>
                 <entry key="key3" value="value3"></entry>
+<!--                <entry>-->
+<!--                    <key><ref bean=""></ref></key>-->
+<!--                    <ref bean=""></ref>-->
+<!--                </entry>-->
             </map>
         </property>
         <property name="set">
@@ -34,12 +38,20 @@
                 <value>Redis</value>
             </set>
         </property>
+
         <!-- 注入List<Course>，值是对象-->
         <property name="courseList">
             <list value-type="collection.Course">
                 <ref bean="course1"></ref>
                 <ref bean="course2"/>
             </list>
+        </property>
+        <property name="properties">
+            <props>
+                <prop key="pk1">pv1</prop>
+                <prop key="pk2">pv2</prop>
+                <prop key="pk3">pv3</prop>
+            </props>
         </property>
     </bean>
 

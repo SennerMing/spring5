@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!--
+        1.id属性名字（唯一）
+        2.class需要全限定名
+     -->
+<!--    <bean id="animal" class="concept.Animal"></bean>-->
+
+<!--    <bean id="animal1" class="concept.Animal"></bean>-->
+
+<!--    <bean class="concept.Animal"></bean>-->
+
+    <bean id="animal" name="ani1,ani2" class="concept.Animal"></bean>
+
+</beans>

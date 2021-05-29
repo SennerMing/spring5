@@ -1,6 +1,7 @@
 package annotation.service;
 
 import annotation.dao.UserDao;
+import dao.UserDaoImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -36,5 +37,8 @@ public class UserService {
     public void add() {
         System.out.println("UserService add()....");
         userDao.add();
+    }
+
+    public void setUserDao(UserDaoImpl userDao) {
     }
 }

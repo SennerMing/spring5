@@ -4,7 +4,7 @@ public class Animal {
     private String name;
     private int age;
 
-    public Animal() {
+    private Animal() {
     }
 
     public Animal(String name, int age) {
