@@ -9,6 +9,7 @@ import bean.Employee;
 import collection.District;
 import collection.Student;
 import concept.Animal;
+import factory.ConnectionFactoryBean;
 import factory.Production;
 import javafx.application.Application;
 import lifecycle.Person;
@@ -17,6 +18,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import service.UserService;
+
+import java.sql.Connection;
 
 public class TestSpring {
 
@@ -102,9 +105,23 @@ public class TestSpring {
         //1.加载我们写的Spring的xml配置文件
         ApplicationContext context = new ClassPathXmlApplicationContext("factory.xml");
         //2.获取通过配置创建的对象
-        Production production1 = context.getBean("production", Production.class);
+//        Production production1 = context.getBean("production", Production.class);
+        Connection conn = context.getBean("conn", Connection.class);
+        Connection conn1 = context.getBean("conn", Connection.class);
         //获取到对象并使用
-        System.out.println(production1);
+        System.out.println(conn);
+        System.out.println(conn1);
+    }
+
+    @Test
+    public void testFactoryBean() {
+        //1.加载我们写的Spring的xml配置文件
+        ApplicationContext context = new ClassPathXmlApplicationContext("factory.xml");
+        //2.获取通过配置创建的对象
+//        Production production1 = context.getBean("production", Production.class);
+        ConnectionFactoryBean conn = context.getBean("&conn", ConnectionFactoryBean.class);
+        //获取到对象并使用
+        System.out.println(conn);
     }
 
     @Test

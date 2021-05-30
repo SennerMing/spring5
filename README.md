@@ -1758,8 +1758,130 @@ prop.password=*********
 ### 8.2 DI
 
 ```markdown
-1.
+1.注入：通过Spring的工厂及配置文件,为对象(Bean，组件)的成员变量赋值
+2.依赖：理念，当一个类需要另一个类时，就产生了对其的依赖，就可以将另个一类，作为成员变量，最终通过Spring的配置文件进行注入（赋值）
+目的还是为了解耦合
 ```
+
+## 9 Spring工厂的复杂对象
+
+有复杂对象那么就有简单对象，简单对象可以暂时定义为，可以通过new构造方法进行创建的对象，复杂对象则相反
+
+```markdown
+1.简单对象(直接new构造）：
+		类似于我们之前创建的XxxService、XxxDao、XxxEntity
+2.复杂对象(需要一些标准配置的对象)：
+		像是我们之前创建的数据库Connection啊，SqlSessionFactory
+		Class.forName("com.mysql.jdbc.Driver")
+		conn = DriverManager.getConnection();
+		
+		InputStream inputStream = Resource.getResourceAsStream()
+		new SqlSessionFactoryBuilder().build(inputStream)
+```
+
+### 9.1 FactoryBean接口
+
+开发步骤
+
+- 实现FactoryBean的接口
+
+  ```markdown
+  1.getObject() //用于书写创建复杂对象的代码，并把复杂对象作为方法的返回值返回
+  		Connection
+  				Class.forName("com.mysql.jdbc.Driver");
+  				Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/SM","root","password")
+  				return conn;
+  		
+  		SqlSessionFactory
+  				InputStream resourceAsStream = Resources.getResourceAsStream("mybatis-config.xml");
+  				SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(resourceAsStream);
+  
+  2.getObjectType() //返回所创建复杂对象的Class对象
+  		Connection.class
+  		SqlSessionFactory.class
+  3.isSingleton() //返回true的话，只需要创建一次，返回false的话，那么每一次调用，都需要创建一个新的复杂对象
+  ```
+
+  参考代码factory.ConnectionFactoryBean
+
+- Spring配置文件的配置
+
+  ```xml
+  <bean id="conn" class="factory.ConnectionFactoryBean"></bean>
+  ```
+
+  先对简单对象的再次理解
+
+  ```markdown
+  简单对象
+  		<bean id="user" class="xxx.xx.User"></bean>
+  		我们通过applicationContext.getBean("user")获得的就是这个User的类对象
+  那么复杂对象（FactoryBean）
+  		<bean id="conn" class="factory.ConnectionFactoryBean"></bean>
+  		错误的认知：
+  				applicationContext.getBean("conn")获得的是ConnectionFactoryBean这个类对象
+  		正确的认知：
+  				applicationContext.getBean("conn")获得的是ConnectionFactoryBean创建的复杂对象Connection
+  ```
+
+  参考resources/factory.xml
+
+  ```markdown
+  1.注意：那么我们就是想获得这个ConnectionFactoryBean的这个类对象呢？
+  		|- applicationContext.getBean("&conn");
+  		
+  2.isSingleton:
+  		返回true的时候只会创建一个复杂对象
+  		返回false的时候每次都会创建新的对象
+  		
+  3.那上面我们的代码中isSingleton(){return false;}
+  		1.我们在测试代码中连续获得两次这个conn对象
+  				TestSpring.testFactory();
+  				//打印结果
+  					com.mysql.cj.jdbc.ConnectionImpl@6f19ac19
+  					com.mysql.cj.jdbc.ConnectionImpl@119cbf96
+  		
+  		2.那我们如何决定这个isSingleton()是返回true或者返回false呢？
+  		 答：如果能被大家共用的话，我们就返回true，如果不能被共用，那么我们就设置为false，以本案例来看，那我				 们的数据库连接能不能被共用呢？那肯定不行嘛！
+  		 		那么对于SqlSessionFactory作为单例就很合适了。
+  		 		
+  4.运行时，报SSL warning，在数据库连接串后面加上?useSSL=false
+  		jdbc:mysql://localhost:3306/DBname?useSSL=false
+  						
+  ```
+
+依赖注入的体会（DI）
+		像是Connection这些个驱动名，连接串，用户名密码都是创建数据库连接的必备参数
+		factory.ConnectionBeanFactory改：
+
+```java
+public class ConnectionFactoryBean implements FactoryBean<Connection> {
+    private String driverClassName;
+    private String url;
+    private String userName;
+    private String password;
+  	//....
+}
+```
+
+```xml
+<bean id="conn" class="factory.ConnectionFactoryBean">
+  <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"></property>
+  <property name="url" value="jdbc:mysql://localhost:3306/musicianclub"></property>
+  <property name="userName" value="root"/>
+  <property name="password" value="xxxxxxx"/>
+</bean>
+```
+
+
+
+### 9.2 实例工厂
+
+
+
+### 9.3 静态工厂
+
+
 
 ## Spring与日志框架的整合
 
