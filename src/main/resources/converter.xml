@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- 第一步，我们先将我们自己写的日期格式转换器在咱们的这个Spring框架中构造出来 -->
+    <bean id="myDateConverter" class="converter.MyDateConverter">
+        <property name="pattern" value="yyyy-MM-dd"></property>
+    </bean>
+
+    <!-- 第二步，我们要将我们的自定义转换器赋给我们的这个Spring的转换器工厂 -->
+    <bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">
+        <property name="converters">
+            <set>
+                <ref bean="myDateConverter"></ref>
+            </set>
+        </property>
+    </bean>
+
+    <bean id="alienware" class="converter.Alienware">
+        <property name="name" value="SennerMingAli"/>
+        <property name="birthday" value="2021-05-30"/>
+    </bean>
+
+</beans>

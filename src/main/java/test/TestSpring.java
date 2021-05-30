@@ -6,18 +6,22 @@ import basic.Order;
 import basic.User;
 import bean.Department;
 import bean.Employee;
+import beanpost.Category;
 import collection.District;
 import collection.Student;
 import concept.Animal;
+import converter.Alienware;
 import factory.ConnectionFactoryBean;
 import factory.Production;
 import javafx.application.Application;
 import lifecycle.Person;
+import lifecycle.Product;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import scope.Account;
 import service.UserService;
 
 import java.sql.Connection;
@@ -109,7 +113,7 @@ public class TestSpring {
 //        Production production1 = context.getBean("production", Production.class);
 //        Connection conn = context.getBean("conn", Connection.class);
 //        Connection conn1 = context.getBean("conn", Connection.class);
-        Connection conn = context.getBean("conn1", Connection.class);
+        Connection conn = context.getBean("staticConn", Connection.class);
         //获取到对象并使用
         System.out.println(conn);
     }
@@ -261,6 +265,38 @@ public class TestSpring {
         System.out.println(animal);
     }
 
+    @Test
+    public void testScope() {
+        ApplicationContext context = new ClassPathXmlApplicationContext("scope.xml");
+        Account account = context.getBean("account", Account.class);
+        System.out.println(account);
+
+        Account account1 = context.getBean("account", Account.class);
+        System.out.println(account1);
+    }
+
+
+    @Test
+    public void testProductLife() {
+        ApplicationContext context = new ClassPathXmlApplicationContext("lifecycle.xml");
+        Product product = context.getBean("product", Product.class);
+        System.out.println(product);
+        ((ClassPathXmlApplicationContext) context).close();
+    }
+
+    @Test
+    public void testConverter() {
+        ApplicationContext context = new ClassPathXmlApplicationContext("converter.xml");
+        Alienware alienware = context.getBean("alienware", Alienware.class);
+        System.out.println(alienware);
+    }
+
+    @Test
+    public void testMyBeanPostProcessor() {
+        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("beanpost.xml");
+        Category category = applicationContext.getBean("category", Category.class);
+        System.out.println(category.getName());
+    }
 
 
 }
