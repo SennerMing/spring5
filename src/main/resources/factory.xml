@@ -13,7 +13,12 @@
         <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"></property>
         <property name="url" value="jdbc:mysql://localhost:3306/musicianclub"></property>
         <property name="userName" value="root"/>
-        <property name="password" value="xxxxxxx"/>
+        <property name="password" value="******"/>
     </bean>
+
+
+    <bean id="connectionFactory" class="factory.ConnectionFactory"></bean>
+
+    <bean id="conn1" factory-bean="connectionFactory" factory-method="getConnection"></bean>
 
 </beans>

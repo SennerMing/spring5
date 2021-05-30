@@ -1,8 +1,4 @@
-
-
-
-
-# Spring Framework 5
+Spring Framework 5
 
 ## 1.相关概念
 
@@ -1781,7 +1777,7 @@ prop.password=*********
 
 ### 9.1 FactoryBean接口
 
-开发步骤
+#### 9.1.1 开发步骤
 
 - 实现FactoryBean的接口
 
@@ -1864,6 +1860,8 @@ public class ConnectionFactoryBean implements FactoryBean<Connection> {
 }
 ```
 
+factory.xml改成介个亚子：
+
 ```xml
 <bean id="conn" class="factory.ConnectionFactoryBean">
   <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"></property>
@@ -1875,7 +1873,93 @@ public class ConnectionFactoryBean implements FactoryBean<Connection> {
 
 
 
+```markdown
+你看看，把ConnectionFactoryBean中依赖的四个字符串信息，进行配置文件的注入
+还是为了解耦合啊！
+```
+
+
+
+#### 9.1.2 FactoryBean的实现原理[简易版] 
+
+```markdown
+1.为什么Spring要规定一个FactoryBean接口，让我们去实现他，调用getObject()方法去获得Bean对象呢？
+2.为什么applicationcontext.getBean("conn");获得的是复杂对象Connection而不是获得ConnectionFactoryBean(&)呢？
+
+接口加反射，唉，是什么都能做~
+```
+
+如何解释呢？
+
+```markdown
+问题：
+一、那么这行代码：Connection conn = ctx.getBean("conn");
+		其实Spring内部是做了三个步骤
+		1.根据conn获得<bean>标签相关的信息，并判断 instanceOf(FactoryBean) 是不是FactoryBean的子类啊
+    2.那么判断出来是的话，根据人家的接口规范，那肯定是返回对象的话，人家Spring肯定就调用了getObject()调用
+    3.那么调用完成，按照你的代码逻辑，进行复杂对象的创建，进行返回了！
+```
+
+#### 9.1.3 FactoryBean小结
+
+Spring中用于创建复杂对象的方式之一，也是Spring原生提供的，后续讲解Spring整合其他框架，其中也大量应用FactoryBean
+
 ### 9.2 实例工厂
+
+使用实例工厂的原因
+
+```markdown
+1.避免Spring框架的侵入
+		像是使用FactoryBean的话我们必须要implements FactoryBean
+2.整合遗留的系统
+		那么我们之前的一些老的系统的话，系统中已经存在了一个ConnectionFactory的这个类，其中有getConnection()方法来获取我们的数据库连接，（像是只有.class文件）这种情况的下，我们就得使用我们的实例工厂了
+```
+
+针对整合遗留系统的开发步骤
+
+1.创建ConnectionFactory
+
+```java
+public class ConnectionFactory {
+    public Connection getConnection() {
+        Connection connection = null;
+        try {
+            Class.forName("com.mysql.jdbc.Driver");
+            connection = DriverManager.getConnection("jdbc:mysql://localhost/musicianclub",
+                    "root", "******");
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+
+        return connection;
+    }
+}
+```
+
+2.Spring配置文件
+
+```xml
+<bean id="connectionFactory" class="factory.ConnectionFactory"></bean>
+<bean id="conn1" factory-bean="connectionFactory" factory-method="getConnection"></bean>
+```
+
+3.测试方法
+
+```java
+@Test
+public void testFactory() {
+  //1.加载我们写的Spring的xml配置文件
+  ApplicationContext context = new ClassPathXmlApplicationContext("factory.xml");
+  //2.获取通过配置创建的对象
+  Connection conn = context.getBean("conn1", Connection.class);
+  //获取到对象并使用
+  System.out.println(conn);
+}
+```
+
+
 
 
 

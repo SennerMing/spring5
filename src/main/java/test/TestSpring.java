@@ -16,6 +16,7 @@ import lifecycle.Person;
 import org.junit.jupiter.api.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
+import org.springframework.context.annotation.Condition;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 import service.UserService;
 
@@ -106,11 +107,11 @@ public class TestSpring {
         ApplicationContext context = new ClassPathXmlApplicationContext("factory.xml");
         //2.获取通过配置创建的对象
 //        Production production1 = context.getBean("production", Production.class);
-        Connection conn = context.getBean("conn", Connection.class);
-        Connection conn1 = context.getBean("conn", Connection.class);
+//        Connection conn = context.getBean("conn", Connection.class);
+//        Connection conn1 = context.getBean("conn", Connection.class);
+        Connection conn = context.getBean("conn1", Connection.class);
         //获取到对象并使用
         System.out.println(conn);
-        System.out.println(conn1);
     }
 
     @Test
