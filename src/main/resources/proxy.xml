@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <bean id="userService" class="aop.UserServiceImpl"></bean>
+
+    <bean id="orderService" class="aop.OrderServiceImpl"></bean>
+
+<!--    <bean id="myBefore" class="aop.dynamic.MyBefore"></bean>-->
+
+<!--    <bean id="myBefore" class="aop.dynamic.MyBefore1"></bean>-->
+
+    <bean id="around" class="aop.dynamic.Around"/>
+
+    <aop:config>
+        <!--
+            这个pointcut就是我们刚才所说的切入点，
+                id:先随便取个名字;
+                expression:切入点表达式;下面这个写法，就表达的是所有的方法
+         -->
+<!--        <aop:pointcut id="pc" expression="execution(* *(..))"/>-->
+<!--        <aop:pointcut id="pc" expression="execution(* login(..))"/>-->
+<!--        <aop:pointcut id="pc" expression="execution(* login(String,String))"/>-->
+<!--        <aop:pointcut id="pc" expression="execution(* login(String))"/>-->
+<!--        <aop:pointcut id="pc" expression="execution(* login(String,..))"/>-->
+<!--        <aop:pointcut id="pc" expression="execution(* aop.UserServiceImpl.login(String,..))"/>-->
+<!--        <aop:pointcut id="pc" expression="execution(* aop.UserServiceImpl.*(..))"/>-->
+<!--        <aop:pointcut id="pc" expression="execution(* *.UserServiceImpl.*(..))"/>-->
+<!--        <aop:pointcut id="pc" expression="args(String,String)"/>-->
+<!--        <aop:pointcut id="pc" expression="within(*..UserServiceImpl)"/>-->
+<!--        <aop:pointcut id="pc" expression="@annotation(aop.annotation.Log)"/>-->
+        <aop:pointcut id="pc" expression="execution(* login(..)) and args(String,String)"/>
+        <!--
+            将额外功能和上面的切入点(pointcut)进行整合
+         -->
+<!--        <aop:advisor advice-ref="myBefore" pointcut-ref="pc"></aop:advisor>-->
+        <aop:advisor advice-ref="around" pointcut-ref="pc"></aop:advisor>
+
+    </aop:config>
+
+</beans>
