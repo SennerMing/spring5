@@ -34,4 +34,21 @@ public class TestProxy {
     }
 
 
+    @Test
+    public void testMyProxyBeanPostProcessor() {
+        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("aopfactory.xml");
+        aop.factory.UserService userService = (aop.factory.UserService) applicationContext.getBean("userService");
+        userService.login("SennerMing", "123456");
+        userService.register(new User());
+    }
+
+    @Test
+    public void testMyAnnotationAspect() {
+        ApplicationContext applicationContext = new ClassPathXmlApplicationContext("aspect.xml");
+        aspect.UserService userService = (aspect.UserService) applicationContext.getBean("userService");
+//        userService.login("SennerMing", "123465");
+        userService.register(new User());
+    }
+
+
 }

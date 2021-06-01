@@ -1,3 +1,5 @@
+
+
 # Spring AOP 学习
 
 ## 1 静态代理设计模式
@@ -1110,6 +1112,530 @@ CGlib				 Enhancer										 通过集成父类创建的代理类
 ```markdown
 调用构造函数，属性注入之后   ------>  BeanPostProcessor.postProcessBeforeInitialization -----> InitializingBean  --------> initMethod="myInit" -----> BeanPostProcessor.postProcessAfterInitialization
 
+那么结合着BeanPostProcessor还有JDK的动态代理知识，可以回答5.1的核心问题，我们怎么就通过原始类的id就能获得到他的代理类呢？
+
+思路分析：
+1.根据<bean id="userService" class="aop.UserServiceImpl"></bean>标签完成Bean对象的构造
+2.构造完成后，会调用BeanPostProcessor.postProcessBeforeInitialization()，但是其中并未做任何处理
+3.InitializingBean的AfterPropertiesSet()
+4.接着到了init-method="myInit"
+5.初始化完成后，会调用BeanPostProcessor.postProcessAfterInitialization(),那么我们就可以在这个方法中使用JDK动态代理userServiceProxy = Proxy.newProxyInstance(classLoader,interfaces,invocationHandler) return userServiceProxy;就将代理对象返回
+6.那么用户通过代码 UserService userService = (UserService)ctx.getBean("userService")获得到动态代理对象
+```
+
+根据回顾的内容进行，使用BeanPostProcessor完成自定义的代理功能的实现
+
+```java
+package aop.factory;
+
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanPostProcessor;
+
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
+
+public class MyProxyBeanPostProcessor implements BeanPostProcessor {
+
+    @Override
+    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+        return bean;
+    }
+
+    @Override
+    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+        Object proxyBean = Proxy.newProxyInstance(MyProxyBeanPostProcessor.class.getClassLoader(), bean.getClass().getInterfaces(), new InvocationHandler() {
+            @Override
+            public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                System.out.println("........MyProxyBeanPostProcessor logging ......");
+                return method.invoke(bean, args);
+            }
+        });
+        return proxyBean;
+    }
+}
+```
+
+Spring的配置文件,aopfactory.xml
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+    <bean id="userService" class="aop.factory.UserServiceImpl"></bean>
+
+    <!--
+        1.实现BeanPostProcessor进行加工
+        2.配置文件将BeanPostProcessor注册到Spring工厂
+     -->
+    <bean id="myProxyBeanPostProcessor" class="aop.factory.MyProxyBeanPostProcessor"></bean>
+
+</beans>
+```
+
+进行测试
+
+```java
+@Test
+public void testMyProxyBeanPostProcessor() {
+  ApplicationContext applicationContext = new ClassPathXmlApplicationContext("aopfactory.xml");
+  aop.factory.UserService userService = (aop.factory.UserService) applicationContext.getBean("userService");
+  userService.login("SennerMing", "123456");
+  userService.register(new User());
+}
+```
+
+## 6 基于注解的AOP编程
+
+### 6.1 开发步骤详解
+
+```markdown
+基于注解的AOP编程的开发步骤
+1.创建原始类
+2.额外功能的实现
+3.切入点
+4.组装 - 切入点与额外功能的组装Pointcut+Advice
+
+那么第一步创建原始类，和之前的AOP开发的方式没有什么不同
+区别是在下面的2.3.4步，这些步骤都被揉进了@Aspect中了，@Aspect揉进了(Pointcut+Advice)
+```
+
+首先创建原始类，就使用之前常用的UserService
+
+创建一个切面(Advice+Pointcut)
+
+```java
+package aspect;
+
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+
+/**
+ * 加上这个@Aspect注解那么这个类就代表了一个切面(Aspect = Advice[额外功能] + Pointcut[额外功能要放在哪执行])
+ *
+ * 回顾我们在Spring框架中，之前是如何进行切面的实现的
+ *      1.额外功能
+ *      public class MyMethodInterceptor implements MethodInterceptor{
+ *
+ *          public Object invoke(MethodInvocation methodInvocation){
+ *              //sout("原函数调用之前的额外功能....")
+ *              Object ret = methodInvocation.proceed();
+ *              //sout("原函数调用之后的额外功能....")
+ *              return ret;
+ *          }
+ *      }
+ *      2.切入点
+ *      我们之前是在Spring中进行切入点的配置
+ *      <aop:config>
+ *          <aop:pointcut id="pc" expression="execution(* *(..))"></aop:pointcut>
+ *      <aop:config/>
+ *      其实里面最终要的就是这个切入点的表达式，就是需要额外功能要执行的位置，回到下面的around()方法
+ *
+ *      3.在Spring中进行配置
+ */
+@Aspect
+public class MyAspect {
+
+    /**
+     * 这个方法名字随便起的
+     *
+     * 1. 需要加上@Around的这个注解，这个注解就相当于之前需要实现MethodInterceptor这个接口
+     *
+     * 2. Object 就相当于之前的invoke()函数的返回值，就是原始方法的返回值
+     *
+     * 3. 之前invoke的方法中又MethodInvocation这个对象，能对原方法进行调用，那么ProceedingJoinPoint就和其等同
+     *
+     * 那么至此这个额外功能就开发完了，跳回到上面的切入点
+     *
+     * 其实这个@Around()里面就可以在里面写切入点表达式了
+     *
+     * @return
+     */
+    @Around("execution(* login(..))")
+    public Object around(ProceedingJoinPoint proceedingJoinPoint){
+        Object ret = null;
+        try {
+            System.out.println("----------- aspect logging --------------");
+            ret = proceedingJoinPoint.proceed();
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+        return ret;
+    }
+}
+```
+
+进行Spring的配置，aspect.xml
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <!-- 原始对象 -->
+    <bean id="userService" class="aspect.UserServiceImpl"></bean>
+
+    <!-- 切面的创建，在这个切面中，既体现了额外功能，还体现了切入点 -->
+    <bean id="myAspect" class="aspect.MyAspect"></bean>
+
+    <!-- 告知Spring工厂基于注解进行AOP的编程 -->
+    <aop:aspectj-autoproxy></aop:aspectj-autoproxy>
+
+</beans>
+```
+
+进行测试
+
+```java
+@Test
+public void testMyAnnotationAspect() {
+  ApplicationContext applicationContext = new ClassPathXmlApplicationContext("aspect.xml");
+  aspect.UserService userService = (aspect.UserService) applicationContext.getBean("userService");
+  userService.login("SennerMing", "123465");
+  userService.register(new User());
+}
+```
+
+**切入点使用带来的问题**
+
+### 6.2 切入点复用
+
+在切面类中定义一个函数，上面打上@Pointcut注解，通过这种方式定义切入点表达式，后续更加有利于切入点的复用
+
+@Around切入点复用
+
+```java
+@Around("execution(* login(..))")
+public Object around(ProceedingJoinPoint proceedingJoinPoint){
+  Object ret = null;
+  try {
+    System.out.println("----------- aspect logging around--------------");
+    ret = proceedingJoinPoint.proceed();
+  } catch (Throwable throwable) {
+    throwable.printStackTrace();
+  }
+  return ret;
+}
+
+
+@Around("execution(* login(..))")
+public Object around1(ProceedingJoinPoint proceedingJoinPoint){
+  Object ret = null;
+  try {
+    System.out.println("----------- aspect logging around 1--------------");
+    ret = proceedingJoinPoint.proceed();
+  } catch (Throwable throwable) {
+    throwable.printStackTrace();
+  }
+  return ret;
+}
+
+//									运行结果							
+		/**
+     * ----------- aspect logging around--------------
+     * ----------- aspect logging around 1--------------
+     * UserServiceImpl.login 业务逻辑 + DAO
+     * UserServiceImpl.register  业务逻辑 + DAO
+     */
+```
+
+虽然上面的方式可以实现切入点的复用，但是，如果后面需要给register()方法要加上同样的额外功能，那么就要进行多处切入点的修改，而且，这样写会带来很多代码的冗余，大大增加了代码维护的难度。
+
+Spring工厂考虑到了这个问题，于是他向我们提供了@Pointcut这个注解，里面可以填上我们需要的切入点表达式，那@Around中填什么呢？就填我们这个@Pointcut打在的那个方法，来看示例
+
+```java
+package aspect;
+
+import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.annotation.Pointcut;
+
+/**
+ * 加上这个@Aspect注解那么这个类就代表了一个切面(Aspect = Advice[额外功能] + Pointcut[额外功能要放在哪执行])
+ *
+ * 回顾我们在Spring框架中，之前是如何进行切面的实现的
+ *      1.额外功能
+ *      public class MyMethodInterceptor implements MethodInterceptor{
+ *
+ *          public Object invoke(MethodInvocation methodInvocation){
+ *              //sout("原函数调用之前的额外功能....")
+ *              Object ret = methodInvocation.proceed();
+ *              //sout("原函数调用之后的额外功能....")
+ *              return ret;
+ *          }
+ *      }
+ *      2.切入点
+ *      我们之前是在Spring中进行切入点的配置
+ *      <aop:config>
+ *          <aop:pointcut id="pc" expression="execution(* *(..))"></aop:pointcut>
+ *      <aop:config/>
+ *      其实里面最终要的就是这个切入点的表达式，就是需要额外功能要执行的位置，回到下面的around()方法
+ *
+ *      3.在Spring中进行配置
+ */
+@Aspect
+public class MyAspect {
+
+    @Pointcut("execution(* login(..))")
+    public void myPointcut(){}
+    /**
+     * 这个方法名字随便起的
+     *
+     * 1. 需要加上@Around的这个注解，这个注解就相当于之前需要实现MethodInterceptor这个接口
+     *
+     * 2. Object 就相当于之前的invoke()函数的返回值，就是原始方法的返回值
+     *
+     * 3. 之前invoke的方法中又MethodInvocation这个对象，能对原方法进行调用，那么ProceedingJoinPoint就和其等同
+     *
+     * 那么至此这个额外功能就开发完了，跳回到上面的切入点
+     *
+     * 其实这个@Around()里面就可以在里面写切入点表达式了
+     *
+     * @return
+     */
+    @Around(value="myPointcut()")
+    public Object around(ProceedingJoinPoint proceedingJoinPoint){
+        Object ret = null;
+        try {
+            System.out.println("----------- aspect logging around--------------");
+            ret = proceedingJoinPoint.proceed();
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+        return ret;
+    }
+
+
+    @Around(value="myPointcut()")
+    public Object around1(ProceedingJoinPoint proceedingJoinPoint){
+        Object ret = null;
+        try {
+            System.out.println("----------- aspect logging around 1--------------");
+            ret = proceedingJoinPoint.proceed();
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+        return ret;
+    }
+
+}
+```
+
+### 6.3 动态代理创建方式
+
+```markdown
+AOP底层实现，两种代理创建的方式
+1.JDK			通过实现接口，动态做新的实现类		创建代理对象
+2.CGlib		通过继承父类，动态做建新的子类		创建代理对象
+```
+
+```markdown
+Spring中到底使用何种方式进行动态代理呢？
+默认情况下，AOP编程底层应用的是JDK动态代理创建方式
+
+如果切换CGlib该怎么做？
+1.Spring 基于注解的 AOP的开发
+<!-- 将Spring的AOP底层实现切换为CGlib动态代理技术 -->
+<aop:aspectj-autoproxy proxy-target-class="true"></aop:aspectj-autoproxy>
+2.传统的的AOP开发
+<!-- 将传统的AOP开发代理的实现切换为CGlib -->
+<aop:config proxy-target-class="true">
 
 ```
 
+## 7 AOP开发中的特殊问题
+
+### 7.1 什么情况下会出现这种问题
+
+1.将MyAspect中的myPointcut()切入点表达式修改为类切入点表达式，下面这个两种方式都可以复现问题
+
+```java
+@Pointcut("execution(* login(..))")			//AOP的特殊问题
+@Pointcut("execution(* *..UserServiceImpl.*(..))")			//AOP的特殊问题
+public void myPointcut(){}
+```
+
+2.让UserServiceImpl中的register方法调用login方法
+
+```java
+package aspect;
+
+import aop.User;
+import aop.annotation.Log;
+
+public class UserServiceImpl implements UserService {
+
+    @Log
+    @Override
+    public void register(User user) {
+        System.out.println("UserServiceImpl.register  业务逻辑 + DAO");
+//        throw new RuntimeException("存在异常！");
+        this.login("MingSenner", "654321");		
+    }
+
+    @Override
+    public boolean login(String name, String password) {
+        System.out.println("UserServiceImpl.login 业务逻辑 + DAO");
+        return true;
+    }
+}
+```
+
+测试代码：
+
+```java
+@Test
+public void testMyAnnotationAspect() {
+  ApplicationContext applicationContext = new ClassPathXmlApplicationContext("aspect.xml");
+  aspect.UserService userService = (aspect.UserService) applicationContext.getBean("userService");
+  //        userService.login("SennerMing", "123465");
+  userService.register(new User());
+}
+```
+
+按道理来说，这个register方法中调用了login方法，无论上面的@Pointcut怎么写，这个login方法调用之前，应该是会执行我们写的额外功能，但是现实情况是，上面两种@Pointcut的写法，都没有！
+
+```markdown
+执行结果：
+@Pointcut("execution(* login(..))")
+UserServiceImpl.register  业务逻辑 + DAO
+UserServiceImpl.login 业务逻辑 + DAO
+
+@Pointcut("execution(* *..UserServiceImpl.*(..))")
+----------- aspect logging around--------------
+----------- aspect logging around 1--------------
+UserServiceImpl.register  业务逻辑 + DAO
+UserServiceImpl.login 业务逻辑 + DAO
+```
+
+分析分析
+
+```markdown
+UserService userService = (UserService)ctx.getBean("userService")，这个返回的代理对象！
+当调用register()方法的时候，用的是这个代理对象，但是在register方法体里面调用login是原始对象！
+```
+
+### 7.2 解决方案
+
+问题的总结：
+
+在同一个业务类中，进行业务方法间的相互调用，只有最外层的方法，才是加入了额外功能（内部方法，通过原始对象自己调用，不会加入额外功能）。如果想要让内层的方法也调用代理对象的方法，就要实现ApplicationContextAware，使用工厂为我们生产的代理对象进行方法调用。
+
+```java
+package aspect;
+
+import aop.User;
+import aop.annotation.Log;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+
+public class UserServiceImpl implements UserService , ApplicationContextAware {
+
+    private ApplicationContext ctx;
+
+    @Override
+    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+        this.ctx = applicationContext;
+    }
+
+    @Log
+    @Override
+    public void register(User user) {
+        System.out.println("UserServiceImpl.register  业务逻辑 + DAO");
+//        throw new RuntimeException("存在异常！");
+
+        /**
+         * UserService userService = (UserService)ctx.getBean("userService")，这个返回的代理对象！
+         * 当调用register()方法的时候，用的是这个代理对象，但是在这个方法内部调用的login方法，是原始对象！
+         * 原始对象调用，怎么可能还有额外功能呢？
+         * 解决方案：
+         *      1.从Spring工厂获得UserService代理，再调用login
+         *      ApplicationContext ctx = new ClassPathXmlApplicationContext("aspect.xml");
+         *      UserService userService = ctx.getBean("userService");//Proxy对象
+         *      userService.login()
+         *      当时这样，咱们说，ApplicationContext是一个重量级的对象，不要老是创建他，很占用内存的，而且
+         *      这样的开发方式影响性能不说，还非常之不优雅
+         *
+         *      2.让这个原始类实现ApplicationContextAware接口，让Spring工厂将ApplicationContext传进来
+         *
+         */
+        aop.factory.UserService userService = (aop.factory.UserService) ctx.getBean("userService");
+        userService.login("MingSenner", "654321");       //AOP的特殊问题
+    }
+
+    @Override
+    public boolean login(String name, String password) {
+        System.out.println("UserServiceImpl.login 业务逻辑 + DAO");
+        return true;
+    }
+}
+```
+
+## 8 AOP阶段知识的总结
+
+```markdown
+AOP编程概念（Spring的动态代理开发）
+概念：通过代理类为原始类增加额外功能
+好处：利于原始类及额外功能的维护
+
+开发步骤 1.原始对象 2.额外功能 3.切入点 4.切面组装
+核心：主要是后面的3步
+```
+
+```markdown
+一、传统方式： 
+1.额外功能
+ MethodInterceptor的接口实现 
+ Object invoke(MethodInovcation methodInvocation){
+ 	 Object ret = methodInvocation.proceed();
+ 	 return ret;
+ }
+ 
+2.切入点还有切面组装
+<bean id="myMethodInterceptor" class="xxx.xx.MyMethodInterceptor"></bean>
+<aop:config>
+   <aop:pointcut id="pc" expression="execution(* *(..))"></aop:pointcut>
+   <aop:advisor pointcut-ref="id" advice-ref="myMethodInterceptor"/>
+</aop:config>
+      		
+切入点表达式：方法、包、类
+切入点函数：execution、args、within @annotation
+```
+
+```markdown
+二、注解方式
+1.额外功能+Pointcut都在一个@Aspect中进行实现
+@Aspect
+public class MyAspect{
+
+	@Pointcut("execution()")
+	public void myPointcut(){}
+
+	@Around("execution()")
+	public Object around(ProceedingJointPoint jointPoint){
+		Object ret = jointPoint.proceed()
+		return ret;
+	}
+}
+
+2.进行Aspect在Spring中的注册，以及开启Spring的Aspect注解的功能
+<bean id="myAspect" class="xxx.xx.MyAspect"></bean>
+<aop:aspectj-autoproxy/>
+```
+
+```mark
+底层实现
+1.	JDK			Proxy.newProxyInstance()  ---> 	原始对象的接口，创建代理对象
+2.	CGlib 	Enhancer.create()					--->	爸原始类作为代理的父类，通过继承的方式创建代理对象
+
+指定Spring底层动态代理的技术
+1.传统方式		<aop:config proxy-target-class="true">
+2.注解方式		<aop:aspectj-autoproxy proxy-target-class="true">
+```

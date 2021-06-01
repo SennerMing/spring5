@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+    <bean id="userService" class="aop.factory.UserServiceImpl"></bean>
+
+    <!--
+        1.实现BeanPostProcessor进行加工
+        2.配置文件将BeanPostProcessor注册到Spring工厂
+     -->
+    <bean id="myProxyBeanPostProcessor" class="aop.factory.MyProxyBeanPostProcessor"></bean>
+
+</beans>

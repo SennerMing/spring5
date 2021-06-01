@@ -13,7 +13,10 @@
 
     <bean id="around" class="aop.dynamic.Around"/>
 
-    <aop:config>
+<!--    <aop:config">-->
+
+    <!-- 将传统的AOP开发代理的实现切换为CGlib -->
+    <aop:config proxy-target-class="true">
         <!--
             这个pointcut就是我们刚才所说的切入点，
                 id:先随便取个名字;
