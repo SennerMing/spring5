@@ -1,0 +1,117 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx.xsd http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd">
+
+    <context:property-placeholder location="classpath:jdbc.properties"></context:property-placeholder>
+
+    <!-- 连接池 -->
+    <bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+        <property name="driverClassName" value="${prop.driverClass}"></property>
+        <property name="url" value="${prop.url}"/>
+        <property name="username" value="${prop.userName}"/>
+        <property name="password" value="${prop.password}"/>
+    </bean>
+
+    <!-- 配置SqlSessionFactoryBean -->
+    <bean id="sqlSessionFactoryBean" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource"/>
+        <property name="typeAliasesPackage" value="mybatis.entity"/>
+        <property name="mapperLocations">
+            <list>
+                <value>classpath:mapper/*Mapper.xml</value>
+            </list>
+        </property>
+    </bean>
+
+    <!-- DAO实现类对象 的创建 MapperScannerConfigure-->
+    <bean id="mapperScannerConfigure" class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <!-- 注意这里是sqlSessionFactoryBeanName，所以后面是value而不是ref -->
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactoryBean"/>
+        <property name="basePackage" value="mybatis.dao"/>
+    </bean>
+
+    <!--
+        我们之前讲过，Spring整合了Mybatis
+        这个MapperScannerConfigure会帮我们创建好这个DAO接口的实现对象，供我们使用
+        那么它创建出来的这个实现类对象的名字就是我们那个DAO的首字母的小写
+    -->
+    <bean id="userService" class="mybatis.service.impl.UserServiceImpl">
+        <property name="userDAO" ref="userDAO"></property>
+    </bean>
+
+
+    <!--
+        配置我们的这个DataSourceTransactionManager，
+        这个东西会帮我们实现事务的管理，我们只需要将DataSource交给他就行了
+     -->
+    <bean id="dataSourceTransactionManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource"></property>
+    </bean>
+
+    <!-- ==============================================注解方式开始================================================== -->
+
+    <!--
+        在mybatis.service.impl.UserServiceImpl上加入了@Transactionnal注解之后，还需开启Spring的事务功能
+        Spring就会自动扫描@Transactional注解了
+     -->
+<!--    <tx:annotation-driven transaction-manager="dataSourceTransactionManager"/>-->
+
+
+    <!-- ==============================================注解方式结束================================================== -->
+
+    <!-- ==============================================标签方式开始================================================== -->
+
+    <!-- 配置需要添加事务的方法 -->
+<!--    <tx:advice id="txAdvice" transaction-manager="dataSourceTransactionManager">-->
+<!--        <tx:attributes>-->
+<!--            <tx:method name="register" isolation="DEFAULT" propagation="REQUIRED" rollback-for="java.lang.Exception"/>-->
+<!--        </tx:attributes>-->
+<!--    </tx:advice>-->
+
+        <!-- 实战建议 -->
+    <tx:advice id="txAdvice" transaction-manager="dataSourceTransactionManager">
+        <tx:attributes>
+
+            <tx:method name="register" rollback-for="java.lang.Exception"/>
+            <!--
+                modify*，代表了以modify开头所有的方法
+                如果实战中需要使用标签方式的事务管理，那么建议咱们原始类中的增删改方法，都以modify开头
+             -->
+            <tx:method name="modify*" isolation="DEFAULT" propagation="REQUIRED" rollback-for="java.lang.Exception"/>
+            <!--
+                这个*与上面的组合，就是代表了modify*以外的所有方法，命名无所谓，啥都行
+                所以这个tx:method的顺序是有意义的
+                既然上面是增删改，那这个就代表着查询
+             -->
+            <tx:method name="*" isolation="DEFAULT" propagation="SUPPORTS" read-only="true"/>
+        </tx:attributes>
+    </tx:advice>
+
+    <!-- 组装切面(切点+额外功能) -->
+<!--    <aop:config>-->
+<!--        <aop:pointcut id="pc" expression="execution(* mybatis.service.impl.UserServiceImpl.register(..))"/>-->
+<!--        <aop:advisor advice-ref="txAdvice" pointcut-ref="pc"/>-->
+<!--    </aop:config>-->
+
+    <!-- 实战建议，service包下面的所有方法 -->
+
+    <aop:config>
+        <aop:pointcut id="pc" expression="execution(* mybatis.service..*.*(..))"/>
+        <aop:advisor advice-ref="txAdvice" pointcut-ref="pc"/>
+    </aop:config>
+
+    <!-- ==============================================标签方式开始================================================== -->
+
+
+
+
+
+
+
+
+
+
+</beans>
