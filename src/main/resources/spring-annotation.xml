@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+
+<!--    <context:component-scan base-package="annotation.deeplearning.bean"/>-->
+
+
+    <context:component-scan base-package="annotation.deeplearning.bean" use-default-filters="false">
+        <!--
+        排除的方式：                     
+			一、type:
+					1. assignable:在包扫描的过程中，会排除其指定的类型，不进行扫描
+					2. annotation:用于排除指定的注解，不进行扫描
+					3. aspectj:通过切入点表达式来进行配置的，但是只支持包和类的表达式
+					4. regex:正则表达式
+					5. custom:自定义策略，框架底层开发使用多
+			二、可以组合使用，叠加使用，同时生效
+	-->
+<!--        <context:exclude-filter type="assignable" expression="annotation.deeplearning.bean.User"/>-->
+<!--        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>-->
+<!--        <context:exclude-filter type="aspectj" expression="annotation.deeplearning.bean..*"/>-->
+<!--        <context:exclude-filter type="aspectj" expression="*..User"/>-->
+        
+        <!--
+         包含的方式：
+             1.首先得为<context:component-scan>标签加入一个属性:use-default-filters="false"
+                不使用默认的包扫描方式，让当前包及其子包的扫描方式失效
+             2.<context:include-filter>
+                作用：指定扫描哪些注解
+                1. assignable:在包扫描的过程中，会排除其指定的类型，进行扫描
+                2. annotation:用于排除指定的注解，进行扫描
+                3. aspectj:通过切入点表达式来进行配置的，但是只支持包和类的表达式
+                4. regex:正则表达式
+                5. custom:自定义策略，框架底层开发使用多
+         -->
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Service"/>
+        
+        
+        
+    </context:component-scan>
+
+    <bean id="user" class="annotation.deeplearning.bean.User">
+        <property name="id" value="10"/>
+    </bean>
+
+<!--    <context:property-placeholder location="classpath:category.properties"></context:property-placeholder>-->
+
+
+</beans>

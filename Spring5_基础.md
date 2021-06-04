@@ -543,7 +543,15 @@ Spring提供的IOC容器的实现方式（两个接口）
 - BeanFactory
 
 ```java
-//也就是说上面的ApplicationContext可以换成BeanFactory，但是咱么这边不推荐亲使用呢，因为这个玩意是Spring IOC容器的最基本的实现方式，Spring的内置IOC容器，它不面向咱们programer呢@Testpublic void testAdd() {  //1.加载我们写的Spring的xml配置文件，这样的方式加载配置文件，他并不会创建对象，只有在获取或使用的时候才会去创建对象，这可能就是我们常说的懒加载吧  BeanFactory context = new ClassPathXmlApplicationContext("beans.xml");  //2.获取通过配置创建的对象  User user = context.getBean("user", User.class);  //获取到对象并使用  System.out.println(user);  user.add();}
+//也就是说上面的ApplicationContext可以换成BeanFactory，但是咱么这边不推荐亲使用呢，因为这个玩意是Spring IOC容器的最基本的实现方式，Spring的内置IOC容器，它不面向咱们programer呢
+@Testpublic void testAdd() {
+  //1.加载我们写的Spring的xml配置文件，这样的方式加载配置文件，他并不会创建对象，只有在获取或使用的时候才会去创建对象，这可能就是我们常说的懒加载吧  
+  BeanFactory context = new ClassPathXmlApplicationContext("beans.xml");
+  //2.获取通过配置创建的对象  User user = context.getBean("user", User.class); 
+  //获取到对象并使用  
+  System.out.println(user);
+  user.add();
+}
 ```
 
 - ApplicationContext：他是BeanFactory的一个子接口，功能更为强大，面向咱们程序猿👨🏻‍💻的，他和BeanFactory就不一样了，他一加载XML方式，他就把对象创建了，不同的实现类
@@ -573,15 +581,88 @@ DI：依赖注入，就是注入属性
 使用set方式进行属性注入
 
 ```java
-public class Book {    private String name;    private String author;    public Book() {    }    public Book(String name, String author) {        this.name = name;        this.author = author;    }    public String getName() {        return name;    }    public void setName(String name) {        this.name = name;    }    public String getAuthor() {        return author;    }    public void setAuthor(String author) {        this.author = author;    }    @Override    public String toString() {        return "Book{" +                "name='" + name + '\'' +                '}';    }    public static void main(String[] args) {        Book book = new Book();        book.setName("书的名字");        book.setAuthor("书的作者");        System.out.println(book);    }}
+package basic;
+
+public class Book {
+
+    private String name;
+    private String author;
+    private String address;
+
+    public Book() {
+    }
+
+    public Book(String name, String author, String address) {
+        this.name = name;
+        this.author = author;
+        this.address = address;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getAuthor() {
+        return author;
+    }
+
+    public void setAuthor(String author) {
+        this.author = author;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    @Override
+    public String toString() {
+        return "Book{" +
+                "name='" + name + '\'' +
+                ", author='" + author + '\'' +
+                ", address='" + address + '\'' +
+                '}';
+    }
+
+    public static void main(String[] args) {
+        Book book = new Book();
+        book.setName("书的名字");
+        book.setAuthor("书的作者");
+        System.out.println(book);
+    }
+
+}
+
 ```
 
 ```xml
-<!--set方法进行属性的注入--><bean id="book" class="basic.Book">  <!--  使用Property完成属性的注入-->  <!--  name:类里面的属性名称-->  <!--  value:向属性中注入的值-->  <property name="name" value="九阳真经"></property> <!--这种简化的写法，只应用于8种基本类型+String-->  <property name="author" value="欧阳锋"></property></bean>
+<!--set方法进行属性的注入-->
+<bean id="book" class="basic.Book">
+  <!--  使用Property完成属性的注入-->  
+  <!--  name:类里面的属性名称-->  
+  <!--  value:向属性中注入的值-->  
+  <property name="name" value="九阳真经"></property>
+  <!--这种简化的写法，只应用于8种基本类型+String-->  
+  <property name="author" value="欧阳锋"></property>
+</bean>
 ```
 
 ```java
-@Testpublic void testBook() {  //1.加载我们写的Spring的xml配置文件  ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");  //2.获取通过配置创建的对象  Book book = context.getBean("book", Book.class);  //获取到对象并使用  System.out.println(book);}
+@Testpublic void testBook() {  
+  //1.加载我们写的Spring的xml配置文件  
+  ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");  
+  //2.获取通过配置创建的对象  
+  Book book = context.getBean("book", Book.class);  
+  //获取到对象并使用  
+  System.out.println(book);
+}
 ```
 
 #### 4.4.2 构造器注入
@@ -593,15 +674,47 @@ public class Book {    private String name;    private String author;    public 
 使用有参构造器进行属性注入
 
 ```java
-public class Order {    private String name;    private String address;    public Order(String name, String address) {        this.name = name;        this.address = address;    }    @Override    public String toString() {        return "Order{" +                "name='" + name + '\'' +                ", address='" + address + '\'' +                '}';    }}
+package basic;
+
+public class Order {
+
+    private String name;
+    private String address;
+
+    public Order(String name, String address) {
+        this.name = name;
+        this.address = address;
+    }
+
+    @Override
+    public String toString() {
+        return "Order{" +
+                "name='" + name + '\'' +
+                ", address='" + address + '\'' +
+                '}';
+    }
+}
+
 ```
 
 ```xml
-<bean id="order" class="basic.Order">  <constructor-arg name="name" value="订单名称"></constructor-arg>  <constructor-arg name="address" value="订单地址"></constructor-arg><!--        <constructor-arg index="0" value="订单名称"></constructor-arg>--><!--        <constructor-arg index="1" value="订单地址"></constructor-arg>--></bean>
+<bean id="order" class="basic.Order"> 
+  <constructor-arg name="name" value="订单名称"></constructor-arg> 
+  <constructor-arg name="address" value="订单地址"></constructor-arg>
+  <!--        <constructor-arg index="0" value="订单名称"></constructor-arg>-->
+  <!--        <constructor-arg index="1" value="订单地址"></constructor-arg>-->
+</bean>
 ```
 
 ```java
-@Testpublic void testOrder() {  //1.加载我们写的Spring的xml配置文件  ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml");  //2.获取通过配置创建的对象  Order order = context.getBean("order", Order.class);  //获取到对象并使用  System.out.println(order);}
+@Testpublic void testOrder() {  
+  //1.加载我们写的Spring的xml配置文件  
+  ApplicationContext context = new ClassPathXmlApplicationContext("beans.xml"); 
+  //2.获取通过配置创建的对象  
+  Order order = context.getBean("order", Order.class);  
+  //获取到对象并使用  
+  System.out.println(order);
+}
 ```
 
 ##### 4.4.2.1 构造注入的重载
@@ -611,7 +724,20 @@ public class Order {    private String name;    private String address;    publi
 ```
 
 ```java
-//但是如果构造器有多个，我想使用第二个构造器的时候private String name;private int age;public Order(String name) {  this.name = name;}public Order(int age) {  this.age = age;}public Order(String name, int age) {  this.name = name;  this.age = age;}
+//但是如果构造器有多个，我想使用第二个构造器的时候
+private String name;
+private int age;
+public Order(String name) {
+  this.name = name;
+}
+public Order(int age) {
+  this.age = age;
+}
+public Order(String name, int age)
+{
+  this.name = name;
+  this.age = age;
+}
 ```
 
 ```markdown
@@ -623,7 +749,12 @@ public class Order {    private String name;    private String address;    publi
 **p名称空间的注入，可以简化基于xml的配置方式**
 
 ```xml
-<?xml version="1.0" encoding="UTF-8"?><beans xmlns="http://www.springframework.org/schema/beans"       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"       xmlns:p="http://www.springframework.org/schema/p"       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">  	<bean id="book" class="basic.Book" p:name="易筋经" p:author="纪晓岚"></bean> 	<!-- 其他写法 -->  <bean id="userService" class="annotation.service.UserService" p:userDao-ref="userDao"></bean></beans>
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"       xmlns:p="http://www.springframework.org/schema/p"       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+<bean id="book" class="basic.Book" p:name="易筋经" p:author="纪晓岚"></bean> 
+  <!-- 其他写法 -->  
+<bean id="userService" class="annotation.service.UserService" p:userDao-ref="userDao"></bean>
+</beans>
 ```
 
 #### 4.4.4 特殊符号注入
@@ -635,13 +766,30 @@ public class Order {    private String name;    private String address;    publi
 ##### 4.4.4.1 null值
 
 ```xml
-<!--    set方法进行属性的注入--><bean id="book" class="basic.Book">  <!--  使用Property完成属性的注入-->  <!--        name:类里面的属性名称-->  <!--        value:向属性中注入的值-->  <property name="name" value="九阳真经"></property>  <property name="author" value="欧阳锋"></property>  <property name="address">	<!-- 使用null标签进行空值的设置 -->    <null></null>  </property></bean>
+<!--    set方法进行属性的注入-->
+<bean id="book" class="basic.Book">
+ <!--  使用Property完成属性的注入-->
+  <!--        name:类里面的属性名称-->
+  <!--        value:向属性中注入的值-->
+  <property name="name" value="九阳真经"></property>
+  <property name="author" value="欧阳锋"></property>
+  <property name="address">
+   <!-- 使用null标签进行空值的设置 --> 
+    <null></null>
+  </property>
+</bean>
 ```
 
 ##### 4.4.4.2 属性值包含一些特殊符号
 
 ```xml
- <!-- 属性值包含特殊符号       1.把<>进行转义 &lt; &gt;       2.把带特殊符号的内容写到CDATA --><property name="address">  <value><![CDATA[<<南京南>>]]></value></property>
+ <!-- 属性值包含特殊符号
+       1.把<>进行转义 &lt; &gt;
+       2.把带特殊符号的内容写到CDATA
+ -->
+<property name="address">
+  <value><![CDATA[<<南京南>>]]></value>
+</property>
 ```
 
 #### 4.4.5 引用类型注入
@@ -657,11 +805,25 @@ public class Order {    private String name;    private String address;    publi
 ```
 
 ```xml
-<!--创建Dao对象，写不写这个id，就看有没有别人引用它--><bean id="userDao" class="dao.UserDaoImpl"></bean><!--创建Service对象--><bean id="userService" class="service.UserService">  <!-- name 类里面属性名称 -->  <!-- ref 引用类型的值，userDao在Spring容器内id的值-->  <property name="userDao" ref="userDao"/></bean>
+<!--创建Dao对象，写不写这个id，就看有没有别人引用它-->
+<bean id="userDao" class="dao.UserDaoImpl"></bean>
+<!--创建Service对象-->
+<bean id="userService" class="service.UserService">
+  <!-- name 类里面属性名称 --> 
+  <!-- ref 引用类型的值，userDao在Spring容器内id的值-->
+  <property name="userDao" ref="userDao"/>
+</bean>
 ```
 
 ```java
-@Testpublic void testRef() {  //1.加载我们写的Spring的xml配置文件  ApplicationContext context = new ClassPathXmlApplicationContext("beans1.xml");  //2.获取通过配置创建的对象  UserService userService = context.getBean("userService", UserService.class);  //获取到对象并使用  userService.add();}
+@Testpublic void testRef() { 
+  //1.加载我们写的Spring的xml配置文件  
+  ApplicationContext context = new ClassPathXmlApplicationContext("beans1.xml");  
+  //2.获取通过配置创建的对象  
+  UserService userService = context.getBean("userService", UserService.class);
+  //获取到对象并使用  
+  userService.add();
+}
 ```
 
 ##### 4.4.5.2 内部bean
@@ -673,17 +835,48 @@ public class Order {    private String name;    private String address;    publi
 ```
 
 ```xml
- <!-- 外部bean --><!--<bean id="department" class="bean.Department"></bean>--><bean id="employee" class="bean.Employee">  <property name="name" value="Senner Ming"/>  <property name="gender" value="Man"/>  <property name="department">    <!-- 内部bean -->    <bean id="department" class="bean.Department">      <property name="name" value="安保部"/>    </bean>  </property></bean>
+ <!-- 外部bean --><!--<bean id="department" class="bean.Department"></bean>-->
+<bean id="employee" class="bean.Employee">  
+  <property name="name" value="Senner Ming"/>  
+  <property name="gender" value="Man"/>  
+  <property name="department">
+    <!-- 内部bean -->    
+    <bean id="department" class="bean.Department">
+      <property name="name" value="安保部"/>    
+    </bean>  
+  </property>
+</bean>
 ```
 
 ```java
-@Testpublic void testInnerBean() {  //1.加载我们写的Spring的xml配置文件  ApplicationContext context = new ClassPathXmlApplicationContext("beans2.xml");  //2.获取通过配置创建的对象  Employee employee = context.getBean("employee", Employee.class);  //获取到对象并使用  System.out.println(employee);}
+@Testpublic void testInnerBean() {
+  //1.加载我们写的Spring的xml配置文件  
+  ApplicationContext context = new ClassPathXmlApplicationContext("beans2.xml");  
+  //2.获取通过配置创建的对象  
+  Employee employee = context.getBean("employee", Employee.class);
+  //获取到对象并使用  
+  System.out.println(employee);
+}
 ```
 
 ##### 4.4.5.3 级联赋值
 
 ```xml
-<!-- 外部bean --><bean id="department" class="bean.Department">  <property name="name" value="舆情业务部"/></bean><bean id="employee" class="bean.Employee">  <property name="name" value="Senner Ming"/>  <property name="gender" value="Man"/>  <property name="department" ref="department">    <!-- 内部bean -->    <!--            <bean id="department" class="bean.Department">-->    <!--                <property name="name" value="安保部"/>-->    <!--            </bean>-->  </property>  <property name="department.name" value="情报部"></property></bean>
+<!-- 外部bean -->
+<bean id="department" class="bean.Department">  
+  <property name="name" value="舆情业务部"/>
+</bean>
+<bean id="employee" class="bean.Employee">  
+  <property name="name" value="Senner Ming"/>  
+  <property name="gender" value="Man"/>  
+  <property name="department" ref="department">
+    <!-- 内部bean -->    
+    <!--            <bean id="department" class="bean.Department">-->    
+    <!--                <property name="name" value="安保部"/>-->    
+    <!--            </bean>-->  
+  </property>  
+  <property name="department.name" value="情报部"></property>
+</bean>
 ```
 
 ```markdown
@@ -705,17 +898,73 @@ public class Order {    private String name;    private String address;    publi
 ```
 
 ```xml
-<!-- 集合类型属性的注入 --><bean id="student" class="collection.Student">  <!--数组类型的属性注入-->  <property name="courses">    <array value-type="java.lang.String">      <value>英语</value>      <value>数学</value>      <value>语文</value>    </array>  </property>  <!-- List类型的属性注入 -->  <property name="list">    <list>      <value>张三</value>      <value>三弟</value>      <value>三儿</value>    </list>  </property>  <property name="map">    <map key-type="java.lang.String" value-type="java.lang.String">      <entry key="key1" value="value1"></entry>      <entry key="key2" value="value2"></entry>      <entry key="key3" value="value3"></entry><!-- <entry>--><!--      <key><ref bean=""></ref></key>--><!--      <ref bean=""></ref>--><!-- </entry>-->    </map>  </property>  <property name="set">    <set value-type="java.lang.String">      <value>Mysql</value>      <value>Redis</value>    </set>  </property>
+<!-- 集合类型属性的注入 -->
+<bean id="student" class="collection.Student">
+  <!--数组类型的属性注入-->  
+  <property name="courses">    
+    <array value-type="java.lang.String">
+      <value>英语</value>      
+      <value>数学</value>      
+      <value>语文</value>    
+    </array>  
+  </property>  
+  <!-- List类型的属性注入 -->  
+  <property name="list">    
+    <list>      
+      <value>张三</value>      
+      <value>三弟</value>      
+      <value>三儿</value>    
+    </list>  
+  </property>  
+  <property name="map">    
+    <map key-type="java.lang.String" value-type="java.lang.String">      
+      <entry key="key1" value="value1"></entry>      
+      <entry key="key2" value="value2"></entry>      
+      <entry key="key3" value="value3"></entry>
+      <!-- <entry>-->
+      <!--      <key><ref bean=""></ref></key>--><!--      <ref bean=""></ref>--><!-- </entry>-->
+    </map>  
+  </property>  
+  <property name="set">
+    <set value-type="java.lang.String">
+      <value>Mysql</value>
+      <value>Redis</value>
+    </set>  
+ </property>
+</bean>
 ```
 
 ```java
-@Testpublic void testCollection() {  //1.加载我们写的Spring的xml配置文件  ApplicationContext context = new ClassPathXmlApplicationContext("collection.xml");  //2.获取通过配置创建的对象  Student student = context.getBean("student", Student.class);  //获取到对象并使用  System.out.println(student);}
+@Testpublic void testCollection() {  
+  //1.加载我们写的Spring的xml配置文件  
+  ApplicationContext context = new ClassPathXmlApplicationContext("collection.xml");  
+  //2.获取通过配置创建的对象  
+  Student student = context.getBean("student", Student.class);  
+  //获取到对象并使用  
+  System.out.println(student);
+}
 ```
 
 **为集合注入其他引用类型元素**
 
 ```xml
- <!-- 集合类型属性的注入 --><bean id="student" class="collection.Student"><!-- 注入List<Course>，值是对象-->  <property name="courseList">    <list value-type="collection.Course">      <ref bean="course1"></ref>      <ref bean="course2"/>    </list>  </property></bean><!-- 创建英语课程对象 --><bean id="course1" class="collection.Course">    <property name="name" value="Spring5框架"></property></bean><bean id="course2" class="collection.Course">    <property name="name" value="Spring Boot框架"></property></bean>
+ <!-- 集合类型属性的注入 -->
+<bean id="student" class="collection.Student">
+  <!-- 注入List<Course>，值是对象-->  
+  <property name="courseList">    
+    <list value-type="collection.Course">      
+      <ref bean="course1"></ref>      
+      <ref bean="course2"/>    
+    </list>  
+  </property>
+</bean>
+<!-- 创建英语课程对象 -->
+<bean id="course1" class="collection.Course">
+  <property name="name" value="Spring5框架"></property>
+</bean>
+<bean id="course2" class="collection.Course">    
+  <property name="name" value="Spring Boot框架"></property>
+</bean>
 ```
 
 ```java
@@ -729,11 +978,28 @@ public class Order {    private String name;    private String address;    publi
 使用util工具进行配置
 
 ```xml
-<?xml version="1.0" encoding="UTF-8"?><beans xmlns="http://www.springframework.org/schema/beans"       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"       xmlns:util="http://www.springframework.org/schema/util"       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">    <!-- 提取List集合类型属性注入 -->    <util:list id="units">        <value>九阴真经</value>        <value>九阳神功</value>        <value>九九皮炎平</value>    </util:list>    <bean id="district" class="collection.District">        <property name="units" ref="units"></property>    </bean></beans>
+<?xml version="1.0" encoding="UTF-8"?><beans xmlns="http://www.springframework.org/schema/beans"       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"       xmlns:util="http://www.springframework.org/schema/util"       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd       http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd">    
+  <!-- 提取List集合类型属性注入 -->    
+  <util:list id="units">        
+    <value>九阴真经</value>        
+    <value>九阳神功</value>        
+    <value>九九皮炎平</value>    
+  </util:list>    
+  <bean id="district" class="collection.District">
+    <property name="units" ref="units"></property>    
+  </bean>
+</beans>
 ```
 
 ```java
-@Testpublic void testDistrict() {  //1.加载我们写的Spring的xml配置文件  ApplicationContext context = new ClassPathXmlApplicationContext("collection1.xml");  //2.获取通过配置创建的对象  District district = context.getBean("district", District.class);  //获取到对象并使用  System.out.println(district);}
+@Testpublic void testDistrict() {  
+  //1.加载我们写的Spring的xml配置文件  
+  ApplicationContext context = new ClassPathXmlApplicationContext("collection1.xml");  
+  //2.获取通过配置创建的对象  
+  District district = context.getBean("district", District.class);
+  //获取到对象并使用  
+  System.out.println(district);
+}
 ```
 
 #### 4.4.8 FactoryBean
@@ -755,17 +1021,62 @@ IOC操作Bean管理（FactoryBean）
 ```
 
 ```java
-public class Production {    private String name;    public String getName() {        return name;    }    public void setName(String name) {        this.name = name;    }    @Override    public String toString() {        return "Production{" +                "name='" + name + '\'' +                '}';    }}//===============================================================public class ProductionFactory implements FactoryBean<Production> {    @Override    public Production getObject() throws Exception {        Production production = new Production();        production.setName("桂格燕麦");        return production;    }    @Override    public Class<?> getObjectType() {        return null;    }    @Override    public boolean isSingleton() {        return false;    }}
+public class Production {
+  private String name;    
+  public String getName() {
+    return name;    
+  }    
+  public void setName(String name) {
+    this.name = name;    
+  }    
+  @Override    
+  public String toString() {
+    return "Production{" +                
+      "name='" + name + '\'' +
+      '}';    
+  }
+}
+//===============================================================
+public class ProductionFactory implements FactoryBean<Production> 
+{    
+  @Override    
+  public Production getObject() throws Exception {
+    Production production = new Production();
+    production.setName("桂格燕麦");
+    return production;    
+  }    
+  @Override
+  public Class<?> getObjectType() {
+    return null;    
+  }    
+  @Override    
+  public boolean isSingleton() {
+    return false;    
+  }
+}
 ```
 
 ```java
-@Testpublic void testFactory() {  //1.加载我们写的Spring的xml配置文件  ApplicationContext context = new ClassPathXmlApplicationContext("factory.xml");  //2.获取通过配置创建的对象  Production production = context.getBean("production", Production.class);  //获取到对象并使用  System.out.println(production);}
+@Testpublic void testFactory() {  
+  //1.加载我们写的Spring的xml配置文件
+  ApplicationContext context = new ClassPathXmlApplicationContext("factory.xml");  
+  //2.获取通过配置创建的对象  
+  Production production = context.getBean("production", Production.class);
+  //获取到对象并使用  
+  System.out.println(production);
+}
 ```
 
 #### 4.4.9 Properties注入
 
 ```xml
-<property name="properties">  <props>    <prop key="pk1">pv1</prop>    <prop key="pk2">pv2</prop>    <prop key="pk3">pv3</prop>  </props></property>
+<property name="properties">
+  <props>    
+    <prop key="pk1">pv1</prop> 
+    <prop key="pk2">pv2</prop> 
+    <prop key="pk3">pv3</prop>  
+  </props>
+</property>
 ```
 
 #### 4.4.10 复杂JDK类型（Date）
@@ -797,7 +1108,21 @@ IOC操作Bean管理（Bean的作用域）
 2、在Spring里面，默认的情况下创建的Bean是一个单实例对象
 
 ```java
-//运行以下代码@Testpublic void testDistrict() {  //1.加载我们写的Spring的xml配置文件  ApplicationContext context = new ClassPathXmlApplicationContext("collection1.xml");  //2.获取通过配置创建的对象  District district1 = context.getBean("district", District.class);  District district2 = context.getBean("district", District.class);  //获取到对象并使用  System.out.println(district1);  System.out.println(district2);}//运行结果,地址一致的，相同的对象/**	collection.District@5b7a5baa	collection.District@5b7a5baa*/
+//运行以下代码
+@Testpublic void testDistrict() {
+  //1.加载我们写的Spring的xml配置文件  
+  ApplicationContext context = new ClassPathXmlApplicationContext("collection1.xml");  
+  //2.获取通过配置创建的对象  
+  District district1 = context.getBean("district", District.class);  
+  District district2 = context.getBean("district", District.class);  
+  //获取到对象并使用  
+  System.out.println(district1);  
+  System.out.println(district2);}
+//运行结果,地址一致的，相同的对象
+/**	
+collection.District@5b7a5baa
+collection.District@5b7a5baa
+*/
 ```
 
 可以通过Spring配置文件bean标签里面的属性（scope）的设置进行Bean作用域的修改
@@ -811,7 +1136,11 @@ IOC操作Bean管理（Bean的作用域）
 ```
 
 ```java
-//再次运行上面的testDistrict()方法，可以看到，两次返回的对象地址不同了/**	collection.District@776aec5c	collection.District@1d296da*/
+//再次运行上面的testDistrict()方法，可以看到，两次返回的对象地址不同了
+/**	
+collection.District@776aec5c
+collection.District@1d296da
+*/
 ```
 
 还有request和session作用域，request：每次请求；session：一次会话
@@ -838,7 +1167,12 @@ Spring针对Bean管理中创建对象提供的注解，四种注解：
 1.首先引入AOP的依赖
 
 ```xml
-<!-- https://mvnrepository.com/artifact/org.springframework/spring-aop --><dependency>    <groupId>org.springframework</groupId>    <artifactId>spring-aop</artifactId>    <version>5.3.6</version></dependency>
+<!-- https://mvnrepository.com/artifact/org.springframework/spring-aop -->
+<dependency>    
+  <groupId>org.springframework</groupId>
+  <artifactId>spring-aop</artifactId>
+  <version>5.3.6</version>
+</dependency>
 ```
 
 2.开启组件的扫描
@@ -846,23 +1180,66 @@ Spring针对Bean管理中创建对象提供的注解，四种注解：
 现在Spring配置文件中加入context标签，配置包扫描
 
 ```xml
-<?xml version="1.0" encoding="UTF-8"?><beans xmlns="http://www.springframework.org/schema/beans"       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"       xmlns:context="http://www.springframework.org/schema/context"       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">    <!-- 开启组件扫描 --><!--    <context:component-scan base-package="annotation.dao annotation.service"></context:component-scan>--><!--    <context:component-scan base-package="annotation.dao,annotation.service"></context:component-scan>-->    <!--        可以写较上层的目录     -->    <context:component-scan base-package="annotation"></context:component-scan></beans>
+<?xml version="1.0" encoding="UTF-8"?><beans xmlns="http://www.springframework.org/schema/beans"       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"       xmlns:context="http://www.springframework.org/schema/context"       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd       http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+  <!-- 开启组件扫描 -->
+  <!--    <context:component-scan base-package="annotation.dao annotation.service"></context:component-scan>-->
+  <!--    <context:component-scan base-package="annotation.dao,annotation.service"></context:component-scan>-->
+  <!--        可以写较上层的目录     -->    
+  <context:component-scan base-package="annotation"></context:component-scan>
+</beans>
 ```
 
 ```java
-package annotation.service;import org.springframework.stereotype.Component;import org.springframework.stereotype.Controller;import org.springframework.stereotype.Repository;import org.springframework.stereotype.Service;//等价于<bean id="userService" class="annotion.service.UserService"></bean>//这个value可以不写，那么默认的就是首字母小写的 userService 驼峰命名法//下面几个注解都可以进行Bean的创建//@Component(value="userService")//@Service(value="userService")//@Controller(value="userService")@Repository(value="userService")public class UserService {    public void add() {        System.out.println("UserService add()....");    }}
+package annotation.service;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Repository;
+import org.springframework.stereotype.Service;
+//等价于<bean id="userService" class="annotion.service.UserService"></bean>
+//这个value可以不写，那么默认的就是首字母小写的 userService 驼峰命名法
+//下面几个注解都可以进行Bean的创建
+//@Component(value="userService")
+//@Service(value="userService")
+//@Controller(value="userService")
+@Repository(value="userService")
+public class UserService {
+  public void add() {
+    System.out.println("UserService add()....");    
+  }
+}
 ```
 
 进行测试
 
 ```java
-@Testpublic void testAnnotation() {  //1.加载我们写的Spring的xml配置文件  ApplicationContext context = new ClassPathXmlApplicationContext("annotation.xml");  //2.获取通过配置创建的对象  annotation.service.UserService userService = context.getBean("userService", annotation.service.UserService.class);  //获取到对象并使用  userService.add();  //手动让Bean实例销毁  ((ClassPathXmlApplicationContext)context).close();}
+@Testpublic void testAnnotation() {
+  //1.加载我们写的Spring的xml配置文件  
+  ApplicationContext context = new ClassPathXmlApplicationContext("annotation.xml");  
+  //2.获取通过配置创建的对象  
+  annotation.service.UserService userService = context.getBean("userService", annotation.service.UserService.class);  
+  //获取到对象并使用  
+  userService.add();
+  //手动让Bean实例销毁
+  ((ClassPathXmlApplicationContext)context).close();
+}
 ```
 
 高阶用法
 
 ```xml
-<!-- 示例        use-default-filters="false"，表示现在不在使用默认的filter，自己配置filter        context:include-filter,设置扫描那些内容        下面一大串xml的意思是：        在annotation包下，并不是去扫描所有的注解的类，而是去扫描带@Controller的注解进行扫描    --><context:component-scan base-package="annotation" use-default-filters="false">  <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/></context:component-scan><!-- 跟上面的正好相反，除了@Controller其他的都进行扫描 --><context:component-scan base-package="annotation">  <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/></context:component-scan>
+<!-- 示例
+        use-default-filters="false"，表示现在不在使用默认的filter，自己配置filter
+        context:include-filter,设置扫描那些内容
+        下面一大串xml的意思是：
+        在annotation包下，并不是去扫描所有的注解的类，而是去扫描带@Controller的注解进行扫描
+    -->
+<context:component-scan base-package="annotation" use-default-filters="false">  
+  <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+</context:component-scan><!-- 跟上面的正好相反，除了@Controller其他的都进行扫描 -->
+
+<context:component-scan base-package="annotation">
+  <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+</context:component-scan>
 ```
 
 ### 5.3 属性注入
@@ -872,15 +1249,43 @@ package annotation.service;import org.springframework.stereotype.Component;impor
 1. @Autowired：根据属性类型进行自动装配
 
    ```java
-   public class UserService {    //定义Dao类型的属性    //不需要添加set的方法    //直接添加属性注解就行    @Autowired    private UserDao userDao;    public void add() {        System.out.println("UserService add()....");        userDao.add();    }}
+   public class UserService {
+     //定义Dao类型的属性    
+     //不需要添加set的方法    
+     //直接添加属性注解就行    
+     @Autowired    
+     private UserDao userDao;
+     public void add() {
+       System.out.println("UserService add()....");
+       userDao.add();    
+     }
+   }
    ```
-
+   
    ```java
-   package annotation.dao;import org.springframework.stereotype.Repository;@Repositorypublic class UserDaoImpl implements UserDao{    @Override    public void add() {        System.out.println("UserDao add() ......");    }}
+   package annotation.dao;
+   import org.springframework.stereotype.Repository;
+   @Repository
+   public class UserDaoImpl implements UserDao{
+     @Override    
+     public void add() {
+       System.out.println("UserDao add() ......");    
+     }
+   }
    ```
-
+   
    ```java
-   @Testpublic void testAnnotation() {  //1.加载我们写的Spring的xml配置文件  ApplicationContext context = new ClassPathXmlApplicationContext("annotation.xml");  //2.获取通过配置创建的对象  annotation.service.UserService userService = context.getBean("userService", annotation.service.UserService.class);  //获取到对象并使用  userService.add();  //手动让Bean实例销毁  ((ClassPathXmlApplicationContext)context).close();}
+   @Test
+   public void testAnnotation() {
+     //1.加载我们写的Spring的xml配置文件  
+     ApplicationContext context = new ClassPathXmlApplicationContext("annotation.xml");  
+     //2.获取通过配置创建的对象  
+     annotation.service.UserService userService = context.getBean("userService", annotation.service.UserService.class);  
+     //获取到对象并使用  
+     userService.add();
+     //手动让Bean实例销毁  
+     ((ClassPathXmlApplicationContext)context).close();
+   }
    ```
 
 #### 5.3.2 Qualifier
@@ -893,41 +1298,111 @@ package annotation.service;import org.springframework.stereotype.Component;impor
    对第一条的理解：
 
    ```java
-   //我们定义了两个TestClass对象，分别是testClass1和testClass2//我们如果在另外一个对象中直接使用@Autowire去注入的话，spring肯定不知道使用哪个对象//会排除异常 required a single bean, but 2 were found@Configurationpublic class TestConfiguration {   @Bean("testClass1")   TestClass testClass1(){       return new TestClass("TestClass1");   }   @Bean("testClass2")   TestClass testClass2(){       return new TestClass("TestClass2");   }}
+   //我们定义了两个TestClass对象，分别是testClass1和testClass2
+   //我们如果在另外一个对象中直接使用@Autowire去注入的话，spring肯定不知道使用哪个对象
+   //会排除异常 required a single bean, but 2 were found
+   @Configuration
+   public class TestConfiguration {
+     @Bean("testClass1")   
+     TestClass testClass1(){
+       return new TestClass("TestClass1");   
+     }   
+     @Bean("testClass2")  
+     TestClass testClass2(){
+       return new TestClass("TestClass2");   
+     }
+   }
    ```
-
+   
    ```java
-   @RestControllerpublic class TestController {    //此时这两个注解的连用就类似 @Resource(name="testClass1")    @Autowired    @Qualifier("testClass1")    private TestClass testClass;    @GetMapping("/test")    public Object test(){        return testClassList;    }}
+   @RestController
+   public class TestController {
+     //此时这两个注解的连用就类似 @Resource(name="testClass1")    
+     @Autowired    
+     @Qualifier("testClass1")    
+     private TestClass testClass;    
+     @GetMapping("/test")    
+     public Object test(){        
+       return testClassList;    
+     }
+   }
    ```
-
+   
    @Autowired和@Qualifier这两个注解的连用在这个位置就类似 @Resource(name=“testClass1”)
-
+   
    对第二条的理解：
-
+   
    ```java
-   @Configurationpublic class TestConfiguration {    //我们调整下在testClass1上增加@Qualifier注解  	@Qualifier    @Bean("testClass1")    TestClass testClass1(){        return new TestClass("TestClass1");    }    @Bean("testClass2")    TestClass testClass2(){        return new TestClass("TestClass2");    }}
+   @Configuration
+   public class TestConfiguration {
+     //我们调整下在testClass1上增加@Qualifier注解  	
+     @Qualifier    
+     @Bean("testClass1")    
+     TestClass testClass1(){
+       return new TestClass("TestClass1");
+     }    
+     @Bean("testClass2")    
+     TestClass testClass2(){
+       return new TestClass("TestClass2");
+     }
+   }
    ```
-
+   
+   
+   
    ```java
-   @RestControllerpublic class TestController {    //我们这里使用一个list去接收testClass的对象    @Autowired    List<TestClass> testClassList= Collections.emptyList();        @GetMapping("/test")    public Object test(){        return testClassList;    }}
+   @RestController
+   public class TestController {    
+     //我们这里使用一个list去接收testClass的对象
+     @Autowired    
+     List<TestClass> testClassList= Collections.emptyList();
+     @GetMapping("/test")    
+     public Object test(){
+       return testClassList;
+     }
+   }
    ```
-
+   
+   
+   
    ```json
-   我们调用得到的结果是[     {        "name": "TestClass1"     },    {       "name": "TestClass2"    }]
+   我们调用得到的结果是
+   [
+     {        
+       "name": "TestClass1"
+     },    
+     {       
+       "name": "TestClass2"
+     }
+   ]
    ```
-
+   
    在Controller的List中增加注解
-
+   
    ```java
-   @RestControllerpublic class TestController {    @Qualifier //我们在这增加注解    @Autowired    List<TestClass> testClassList= Collections.emptyList();    @GetMapping("/test")    public Object test(){        return testClassList;    }}
+   @RestController
+   public class TestController {    
+     @Qualifier 
+     //我们在这增加注解
+     @Autowired
+     List<TestClass> testClassList= Collections.emptyList();
+     @GetMapping("/test")    
+     public Object test(){
+       return testClassList;
+     }
+   }
    ```
-
+   
    和上面代码对比就是在接收参数上增加了@Qualifier注解，这样看是有什么区别，我们调用下，结果如下：
-
+   
    ```json
-   [     {        "name": "TestClass1"     }]
+   [    
+     {        
+       "name": "TestClass1"
+     }
+   ]
    ```
-
+   
    返回结果只剩下增加了@Qualifier注解的TestClass对象，这样我们就可以理解官方说的标记筛选是什么意思了。
    另外，@Qualifier注解是可以指定value的，这样我们可以通过values来分类筛选想要的对象了，这里不列举代码了，感兴趣的同学自己试试。
 
@@ -936,7 +1411,22 @@ package annotation.service;import org.springframework.stereotype.Component;impor
 1. @Resource：可以根据类型注入，也可以根据名称进行注入
 
    ```java
-   public class UserService {    //定义Dao类型的属性    //不需要添加set的方法    //直接添加属性注解就行//    @Autowired//    @Qualifier(value = "userDaoImpl1")//    private UserDao userDao;    	//都可以进行注入 他是javax包里面的注解		//@Resource     @Resource(name = "userDaoImpl1")    private UserDao userDao;    public void add() {        System.out.println("UserService add()....");        userDao.add();    }}
+   public class UserService {
+     //定义Dao类型的属性    
+     //不需要添加set的方法    
+     //直接添加属性注解就行
+     //    @Autowired
+     //    @Qualifier(value = "userDaoImpl1")
+     //    private UserDao userDao;    	
+     //都可以进行注入 他是javax包里面的注解		
+     //@Resource     
+     @Resource(name = "userDaoImpl1")
+     private UserDao userDao;
+     public void add() {
+       System.out.println("UserService add()....");
+       userDao.add();
+     }
+   }
    ```
 
 #### 5.3.4 value
@@ -944,7 +1434,8 @@ package annotation.service;import org.springframework.stereotype.Component;impor
 1. @Value：注入普通类型属性
 
    ```java
-   @Value(value = "SennerMing")private String name;
+   @Value(value = "SennerMing")
+   private String name;
    ```
 
 ### 5.4 完全注解开发
@@ -952,13 +1443,26 @@ package annotation.service;import org.springframework.stereotype.Component;impor
 第一步，创建配置类，意思就是替换那个Xml配置文件
 
 ```java
-//作为配置类，用以替代Xml配置文件，之前在annotation.xml中不是加了一个包扫描嘛？//这个就不用了，直接写在配置类上就行了！@Configuration@ComponentScan(basePackages = {"annotation"})public class SpringConfig {}
+//作为配置类，用以替代Xml配置文件，之前在annotation.xml中不是加了一个包扫描嘛？//这个就不用了，直接写在配置类上就行了！
+@Configuration
+@ComponentScan(basePackages = {"annotation"})
+public class SpringConfig {}
 ```
 
 第二步，测试的方式要改变了
 
 ```java
-@Testpublic void testFullAnnotation() {  //1.加载我们写的SpringConfig.class配置类  ApplicationContext context = new AnnotationConfigApplicationContext(SpringConfig.class);  //2.获取通过配置创建的对象  annotation.service.UserService userService = context.getBean("userService", annotation.service.UserService.class);  //获取到对象并使用  userService.add();  //手动让Bean实例销毁  ((AnnotationConfigApplicationContext)context).close();}
+@Test
+public void testFullAnnotation() {
+  //1.加载我们写的SpringConfig.class配置类  
+  ApplicationContext context = new AnnotationConfigApplicationContext(SpringConfig.class); 
+  //2.获取通过配置创建的对象  
+  annotation.service.UserService userService = context.getBean("userService", annotation.service.UserService.class);  
+  //获取到对象并使用  
+  userService.add();  
+  //手动让Bean实例销毁  
+  ((AnnotationConfigApplicationContext)context).close();
+}
 ```
 
 ## 6 Bean的生命周期
@@ -976,15 +1480,83 @@ Bean的生命周期
 ### 6.1 基本初始化流程
 
 ```xml
-<!-- lifecycle.xml --><bean id="person" class="lifecycle.Person" init-method="initMethod" destroy-method="destroyMethod">  <property name="name" value="Senner Ming"></property>  <property name="age" value="18"></property></bean>
+<!-- lifecycle.xml -->
+<bean id="person" class="lifecycle.Person" init-method="initMethod" destroy-method="destroyMethod">  
+  <property name="name" value="Senner Ming"></property> 
+  <property name="age" value="18"></property>
+</bean>
 ```
 
-```java
-package lifecycle;public class Person {    private String name;    private int age;    //Person的初始化方法    public void initMethod() {        //这时Person的初始化方法        System.out.println("Person的initMethod().....");    }    //Person的销毁方法    public void destroyMethod() {        //这时Person的初始化方法        System.out.println("Person的destroyMethod().....");    }    public String getName() {        return name;    }    public void setName(String name) {        System.out.println("进行Person的name的设置");        this.name = name;    }    public int getAge() {        return age;    }    public void setAge(int age) {        System.out.println("进行Person的age的设置");        this.age = age;    }    public Person() {        System.out.println("执行了无参数的构造器.....");    }    public Person(String name, int age) {        System.out.println("执行了有参数的构造器.....");        this.name = name;        this.age = age;    }    @Override    public String toString() {        return "Person{" +                "name='" + name + '\'' +                ", age=" + age +                '}';    }}
-```
+
 
 ```java
-@Testpublic void testLifeCycle() {  //1.加载我们写的Spring的xml配置文件  ApplicationContext context = new ClassPathXmlApplicationContext("lifecycle.xml");  //2.获取通过配置创建的对象  Person person = context.getBean("production", Person.class);  //获取到对象并使用  System.out.println(person);  //手动让Bean实例销毁  ((ClassPathXmlApplicationContext)context).close();}/**	执行的结果：			执行了无参数的构造器.....			进行Person的name的设置			进行Person的age的设置			Person的initMethod().....			Person{name='Senner Ming', age=18}			Person的destroyMethod().....*/
+package lifecycle;
+public class Person {
+  private String name;
+  private int age;
+  //Person的初始化方法    
+  public void initMethod() {
+    //这时Person的初始化方法
+    System.out.println("Person的initMethod().....");
+  }    
+  //Person的销毁方法    
+  public void destroyMethod() {
+    //这时Person的初始化方法        
+    System.out.println("Person的destroyMethod().....");
+  }    
+  public String getName() {
+    return name;    
+  }    
+  public void setName(String name) {
+    System.out.println("进行Person的name的设置");
+    this.name = name;
+  }    
+  public int getAge() {
+    return age;    
+  }    
+  public void setAge(int age) {
+    System.out.println("进行Person的age的设置");
+    this.age = age;    
+  }    
+  public Person() {
+    System.out.println("执行了无参数的构造器.....");
+  }    
+  public Person(String name, int age) {
+    System.out.println("执行了有参数的构造器.....");
+    this.name = name;
+    this.age = age;
+  }    
+  @Override    
+  public String toString() {
+    return "Person{" +
+      "name='" + name + '\'' +
+      ", age=" + age +
+      '}';
+  }
+}
+```
+
+
+
+```java
+@Test
+public void testLifeCycle() {
+  //1.加载我们写的Spring的xml配置文件  
+  ApplicationContext context = new ClassPathXmlApplicationContext("lifecycle.xml");  
+  //2.获取通过配置创建的对象  
+  Person person = context.getBean("production", Person.class);  
+  //获取到对象并使用  
+  System.out.println(person);  
+  //手动让Bean实例销毁  
+  ((ClassPathXmlApplicationContext)context).close();}
+/**	执行的结果：
+执行了无参数的构造器.....
+进行Person的name的设置
+进行Person的age的设置			
+Person的initMethod().....
+Person{name='Senner Ming', age=18}
+Person的destroyMethod().....
+*/
 ```
 
 ### 6.2 后置处理
@@ -1000,15 +1572,45 @@ package lifecycle;public class Person {    private String name;    private int a
 7. 当容器关闭,调用Bean的销毁方法（需要进行配置销毁的方法）
 
 ```xml
-<bean id="person" class="lifecycle.Person" init-method="initMethod" destroy-method="destroyMethod">  <property name="name" value="Senner Ming"></property>  <property name="age" value="18"></property></bean><bean id="myBeanPost" class="lifecycle.MyBeanPost"></bean>
+<bean id="person" class="lifecycle.Person" init-method="initMethod" destroy-method="destroyMethod">  
+  <property name="name" value="Senner Ming"></property>  
+  <property name="age" value="18"></property>
+</bean>
+<bean id="myBeanPost" class="lifecycle.MyBeanPost"></bean>
 ```
 
-```java
-public class MyBeanPost implements BeanPostProcessor {    @Override    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {        System.out.println("在Bean initMethod()之前执行的方法.....");        return bean;    }    @Override    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {        System.out.println("在Bean initMethod()之后执行的方法.....");        return bean;    }}
-```
+
 
 ```java
-//最终打印结果执行了无参数的构造器.....进行Person的name的设置进行Person的age的设置在Bean initMethod()之前执行的方法.....Person的initMethod().....在Bean initMethod()之后执行的方法.....Person{name='Senner Ming', age=18}Person的destroyMethod().....
+public class MyBeanPost implements BeanPostProcessor {
+  @Override    
+  public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+    System.out.println("在Bean initMethod()之前执行的方法.....");
+    return bean;    
+  }    
+  @Override
+  public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+    System.out.println("在Bean initMethod()之后执行的方法.....");
+    return bean;    
+  }
+ß}
+```
+
+
+
+```java
+/**
+最终打印结果:
+
+执行了无参数的构造器.....
+进行Person的name的设置
+进行Person的age的设置
+在Bean initMethod()之前执行的方法.....
+Person的initMethod().....
+在Bean initMethod()之后执行的方法.....
+Person{name='Senner Ming', age=18}
+Person的destroyMethod().....
+*/
 ```
 
 ### 6.3 自动装配
@@ -1016,11 +1618,34 @@ public class MyBeanPost implements BeanPostProcessor {    @Override    public Ob
 根据指定装配规则（属性名称或者属性类型），Spring会自动将匹配的属性值进行注入
 
 ```xml
-<!-- 实现自动装配        1.bean标签属性autowire，配置自动装配        2.autowire属性常用的两个值：              byName：根据属性名称注入              byType：根据属性类型注入--><!--    <bean id="employee" class="autowire.Employee">--><!--        <property name="department" ref="department"></property>--><!--    </bean>--><!--    <bean id="employee" class="autowire.Employee" autowire="byName">--><!--    </bean>--><bean id="employee" class="autowire.Employee" autowire="byType"></bean><bean id="department" class="autowire.Department"></bean>
+<!-- 实现自动装配
+        1.bean标签属性autowire，配置自动装配
+        2.autowire属性常用的两个值：
+              byName：根据属性名称注入
+              byType：根据属性类型注入
+-->
+<!--    
+<bean id="employee" class="autowire.Employee">  
+<property name="department" ref="department"></property>
+</bean>
+-->
+<!--<bean id="employee" class="autowire.Employee" autowire="byName"></bean>-->
+<bean id="employee" class="autowire.Employee" autowire="byType"></bean>
+<bean id="department" class="autowire.Department"></bean>
 ```
 
 ```java
-@Testpublic void testAutowire() {  //1.加载我们写的Spring的xml配置文件  ApplicationContext context = new ClassPathXmlApplicationContext("autowire.xml");  //2.获取通过配置创建的对象  autowire.Employee employee = context.getBean("employee", autowire.Employee.class);  //获取到对象并使用  System.out.println(employee);  //手动让Bean实例销毁  ((ClassPathXmlApplicationContext)context).close();}
+@Test
+public void testAutowire() {  
+  //1.加载我们写的Spring的xml配置文件  
+  ApplicationContext context = new ClassPathXmlApplicationContext("autowire.xml");  
+  //2.获取通过配置创建的对象  
+  autowire.Employee employee = context.getBean("employee", autowire.Employee.class);
+  //获取到对象并使用  
+  System.out.println(employee);  
+  //手动让Bean实例销毁
+  ((ClassPathXmlApplicationContext)context).close();
+}
 ```
 
 
@@ -1036,13 +1661,19 @@ public class MyBeanPost implements BeanPostProcessor {    @Override    public Ob
 ### 8.1 IOC
 
 ```markdown
-1.反转（转移）控制（IOC Inverse Of Controller）		|- 控制：对于成员变量赋值的控制权						之前是直接代码中完成对成员变量的赋值，那么队成员变量赋值的控制权 = 代码 （显而易见耦合度高）						            现在，对于成员变量赋值的控制权 = Spring配置文件 + Spring工厂 （显而易见的解耦合）    |- 好处： 解耦合了    |- 底层实现：工厂设计模式
+1.反转（转移）控制（IOC Inverse Of Controller）
+|- 控制：对于成员变量赋值的控制权
+之前是直接代码中完成对成员变量的赋值，那么队成员变量赋值的控制权 = 代码 （显而易见耦合度高）
+现在，对于成员变量赋值的控制权 = Spring配置文件 + Spring工厂 （显而易见的解耦合）    
+|- 好处： 解耦合了    
+|- 底层实现：工厂设计模式
 ```
 
 ### 8.2 DI
 
 ```markdown
-1.注入：通过Spring的工厂及配置文件,为对象(Bean，组件)的成员变量赋值2.依赖：理念，当一个类需要另一个类时，就产生了对其的依赖，就可以将另个一类，作为成员变量，最终通过Spring的配置文件进行注入（赋值）目的还是为了解耦合
+1.注入：通过Spring的工厂及配置文件,为对象(Bean，组件)的成员变量赋值
+2.依赖：理念，当一个类需要另一个类时，就产生了对其的依赖，就可以将另个一类，作为成员变量，最终通过Spring的配置文件进行注入（赋值）目的还是为了解耦合
 ```
 
 ## 9 Spring工厂的复杂对象
@@ -1050,7 +1681,14 @@ public class MyBeanPost implements BeanPostProcessor {    @Override    public Ob
 有复杂对象那么就有简单对象，简单对象可以暂时定义为，可以通过new构造方法进行创建的对象，复杂对象则相反
 
 ```markdown
-1.简单对象(直接new构造）：		类似于我们之前创建的XxxService、XxxDao、XxxEntity2.复杂对象(需要一些标准配置的对象)：		像是我们之前创建的数据库Connection啊，SqlSessionFactory		Class.forName("com.mysql.jdbc.Driver")		conn = DriverManager.getConnection();				InputStream inputStream = Resource.getResourceAsStream()		new SqlSessionFactoryBuilder().build(inputStream)
+1.简单对象(直接new构造）：
+类似于我们之前创建的XxxService、XxxDao、XxxEntity
+2.复杂对象(需要一些标准配置的对象)：
+像是我们之前创建的数据库Connection啊，SqlSessionFactory
+Class.forName("com.mysql.jdbc.Driver")
+conn = DriverManager.getConnection();
+InputStream inputStream = Resource.getResourceAsStream()		
+new SqlSessionFactoryBuilder().build(inputStream)
 ```
 
 ### 9.1 FactoryBean接口
@@ -1060,7 +1698,23 @@ public class MyBeanPost implements BeanPostProcessor {    @Override    public Ob
 - 实现FactoryBean的接口
 
   ```markdown
-  1.getObject() //用于书写创建复杂对象的代码，并把复杂对象作为方法的返回值返回		Connection				Class.forName("com.mysql.jdbc.Driver");				Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/SM","root","password")				return conn;				SqlSessionFactory				InputStream resourceAsStream = Resources.getResourceAsStream("mybatis-config.xml");				SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(resourceAsStream);2.getObjectType() //返回所创建复杂对象的Class对象		Connection.class		SqlSessionFactory.class3.isSingleton() //返回true的话，只需要创建一次，返回false的话，那么每一次调用，都需要创建一个新的复杂对象
+  1.getObject() 
+  //用于书写创建复杂对象的代码，并把复杂对象作为方法的返回值返回
+  Connection				
+  Class.forName("com.mysql.jdbc.Driver");
+  Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:3306/SM","root","password")
+  return conn;		
+  
+  SqlSessionFactory
+  InputStream resourceAsStream = Resources.getResourceAsStream("mybatis-config.xml");
+  SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(resourceAsStream);
+  
+  2.getObjectType() 
+  //返回所创建复杂对象的Class对象	
+  Connection.class		SqlSessionFactory.class
+  
+  3.isSingleton() 
+  //返回true的话，只需要创建一次，返回false的话，那么每一次调用，都需要创建一个新的复杂对象
   ```
 
   参考代码factory.ConnectionFactoryBean
@@ -1074,13 +1728,40 @@ public class MyBeanPost implements BeanPostProcessor {    @Override    public Ob
   先对简单对象的再次理解
 
   ```markdown
-  简单对象		<bean id="user" class="xxx.xx.User"></bean>		我们通过applicationContext.getBean("user")获得的就是这个User的类对象那么复杂对象（FactoryBean）		<bean id="conn" class="factory.ConnectionFactoryBean"></bean>		错误的认知：				applicationContext.getBean("conn")获得的是ConnectionFactoryBean这个类对象		正确的认知：				applicationContext.getBean("conn")获得的是ConnectionFactoryBean创建的复杂对象Connection
+  简单对象		
+  <bean id="user" class="xxx.xx.User"></bean>		
+  我们通过applicationContext.getBean("user")获得的就是这个User的类对象那么复杂对象（FactoryBean）
+  <bean id="conn" class="factory.ConnectionFactoryBean"></bean>		
+  错误的认知：				
+  applicationContext.getBean("conn")获得的是ConnectionFactoryBean这个类对象
+  正确的认知：
+  applicationContext.getBean("conn")获得的是ConnectionFactoryBean创建的复杂对象Connection
   ```
-
+  
   参考resources/factory.xml
-
+  
   ```markdown
-  1.注意：那么我们就是想获得这个ConnectionFactoryBean的这个类对象呢？		|- applicationContext.getBean("&conn");		2.isSingleton:		返回true的时候只会创建一个复杂对象		返回false的时候每次都会创建新的对象		3.那上面我们的代码中isSingleton(){return false;}		1.我们在测试代码中连续获得两次这个conn对象				TestSpring.testFactory();				//打印结果					com.mysql.cj.jdbc.ConnectionImpl@6f19ac19					com.mysql.cj.jdbc.ConnectionImpl@119cbf96				2.那我们如何决定这个isSingleton()是返回true或者返回false呢？		 答：如果能被大家共用的话，我们就返回true，如果不能被共用，那么我们就设置为false，以本案例来看，那我				 们的数据库连接能不能被共用呢？那肯定不行嘛！		 		那么对于SqlSessionFactory作为单例就很合适了。		 		4.运行时，报SSL warning，在数据库连接串后面加上?useSSL=false		jdbc:mysql://localhost:3306/DBname?useSSL=false						
+  1.注意：那么我们就是想获得这个ConnectionFactoryBean的这个类对象呢？
+  |- applicationContext.getBean("&conn");
+  
+  2.isSingleton:		
+  返回true的时候只会创建一个复杂对象		
+  返回false的时候每次都会创建新的对象		
+  
+  3.那上面我们的代码中isSingleton(){return false;}		
+  1).我们在测试代码中连续获得两次这个conn对象				
+  TestSpring.testFactory();				
+  //打印结果
+  com.mysql.cj.jdbc.ConnectionImpl@6f19ac19
+  com.mysql.cj.jdbc.ConnectionImpl@119cbf96				
+  
+  2).那我们如何决定这个isSingleton()是返回true或者返回false呢？
+  答：如果能被大家共用的话，我们就返回true，如果不能被共用，那么我们就设置为false，以本案例来看，那我
+  们的数据库连接能不能被共用呢？那肯定不行嘛！
+  那么对于SqlSessionFactory作为单例就很合适了。
+  
+  4.运行时，报SSL warning，在数据库连接串后面加上?useSSL=false		
+  jdbc:mysql://localhost:3306/DBname?useSSL=false						
   ```
 
 依赖注入的体会（DI）
@@ -1088,13 +1769,24 @@ public class MyBeanPost implements BeanPostProcessor {    @Override    public Ob
 		factory.ConnectionBeanFactory改：
 
 ```java
-public class ConnectionFactoryBean implements FactoryBean<Connection> {    private String driverClassName;    private String url;    private String userName;    private String password;  	//....}
+public class ConnectionFactoryBean implements FactoryBean<Connection> {
+  private String driverClassName;    
+  private String url;    
+  private String userName;    
+  private String password;
+  //....
+}
 ```
 
 factory.xml改成介个亚子：
 
 ```xml
-<bean id="conn" class="factory.ConnectionFactoryBean">  <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"></property>  <property name="url" value="jdbc:mysql://localhost:3306/musicianclub"></property>  <property name="userName" value="root"/>  <property name="password" value="xxxxxxx"/></bean>
+<bean id="conn" class="factory.ConnectionFactoryBean">  
+  <property name="driverClassName" value="com.mysql.cj.jdbc.Driver"></property>  
+  <property name="url" value="jdbc:mysql://localhost:3306/musicianclub"></property>
+  <property name="userName" value="root"/>  
+  <property name="password" value="xxxxxxx"/>
+</bean>
 ```
 
 
@@ -1108,13 +1800,22 @@ factory.xml改成介个亚子：
 #### 9.1.2 FactoryBean的实现原理[简易版] 
 
 ```markdown
-1.为什么Spring要规定一个FactoryBean接口，让我们去实现他，调用getObject()方法去获得Bean对象呢？2.为什么applicationcontext.getBean("conn");获得的是复杂对象Connection而不是获得ConnectionFactoryBean(&)呢？接口加反射，唉，是什么都能做~
+1.为什么Spring要规定一个FactoryBean接口，让我们去实现他，调用getObject()方法去获得Bean对象呢？
+2.为什么applicationcontext.getBean("conn");获得的是复杂对象Connection而不是获得ConnectionFactoryBean(&)呢？
+接口加反射，唉，是什么都能做~
 ```
 
 如何解释呢？
 
 ```markdown
-问题：一、那么这行代码：Connection conn = ctx.getBean("conn");		其实Spring内部是做了三个步骤		1.根据conn获得<bean>标签相关的信息，并判断 instanceOf(FactoryBean) 是不是FactoryBean的子类啊    2.那么判断出来是的话，根据人家的接口规范，那肯定是返回对象的话，人家Spring肯定就调用了getObject()调用    3.那么调用完成，按照你的代码逻辑，进行复杂对象的创建，进行返回了！
+问题：
+一、那么这行代码：Connection conn = ctx.getBean("conn");		
+其实Spring内部是做了三个步骤		
+1.根据conn获得<bean>标签相关的信息，并判断 instanceOf(FactoryBean) 是不是FactoryBean的子类啊
+
+2.那么判断出来是的话，根据人家的接口规范，那肯定是返回对象的话，人家Spring肯定就调用了getObject()调用    
+
+3.那么调用完成，按照你的代码逻辑，进行复杂对象的创建，进行返回了！
 ```
 
 #### 9.1.3 FactoryBean小结
@@ -1126,7 +1827,12 @@ Spring中用于创建复杂对象的方式之一，也是Spring原生提供的�
 使用实例工厂的原因
 
 ```markdown
-1.避免Spring框架的侵入		像是使用FactoryBean的话我们必须要implements FactoryBean2.整合遗留的系统		那么我们之前的一些老的系统的话，系统中已经存在了一个ConnectionFactory的这个类，其中有getConnection()方法来获取我们的数据库连接，（像是只有.class文件）这种情况的下，我们就得使用我们的实例工厂了
+1.避免Spring框架的侵入		
+像是使用FactoryBean的话我们必须要implements FactoryBean
+
+2.整合遗留的系统		
+那么我们之前的一些老的系统的话，系统中已经存在了一个ConnectionFactory的这个类，其中有getConnection()方法来获取我们的数据库连接，
+（像是只有.class文件）这种情况的下，我们就得使用我们的实例工厂了
 ```
 
 针对整合遗留系统的开发步骤
@@ -1134,19 +1840,42 @@ Spring中用于创建复杂对象的方式之一，也是Spring原生提供的�
 1.创建ConnectionFactory
 
 ```java
-public class ConnectionFactory {    public Connection getConnection() {        Connection connection = null;        try {            Class.forName("com.mysql.jdbc.Driver");            connection = DriverManager.getConnection("jdbc:mysql://localhost/musicianclub",                    "root", "******");        } catch (ClassNotFoundException e) {            e.printStackTrace();        } catch (SQLException throwables) {            throwables.printStackTrace();        }        return connection;    }}
+public class ConnectionFactory {
+  public Connection getConnection() {
+    Connection connection = null;
+    try {
+      Class.forName("com.mysql.jdbc.Driver");
+      connection = DriverManager.getConnection("jdbc:mysql://localhost/musicianclub",                    
+                                               "root", "******");
+    } catch (ClassNotFoundException e) {
+      e.printStackTrace();
+    } catch (SQLException throwables) {
+      throwables.printStackTrace();
+    }        
+    return connection;
+  }
+}
 ```
 
 2.Spring配置文件
 
 ```xml
-<bean id="connectionFactory" class="factory.ConnectionFactory"></bean><bean id="conn1" factory-bean="connectionFactory" factory-method="getConnection"></bean>
+<bean id="connectionFactory" class="factory.ConnectionFactory"></bean>
+<bean id="conn1" factory-bean="connectionFactory" factory-method="getConnection"></bean>
 ```
 
 3.测试方法
 
 ```java
-@Testpublic void testFactory() {  //1.加载我们写的Spring的xml配置文件  ApplicationContext context = new ClassPathXmlApplicationContext("factory.xml");  //2.获取通过配置创建的对象  Connection conn = context.getBean("conn1", Connection.class);  //获取到对象并使用  System.out.println(conn);}
+@Test
+public void testFactory() {
+  //1.加载我们写的Spring的xml配置文件  
+  ApplicationContext context = new ClassPathXmlApplicationContext("factory.xml");  
+  //2.获取通过配置创建的对象  
+  Connection conn = context.getBean("conn1", Connection.class);  
+  //获取到对象并使用  
+  System.out.println(conn);
+}
 ```
 
 
@@ -1156,25 +1885,74 @@ public class ConnectionFactory {    public Connection getConnection() {        C
 静态工厂，这个创建对象的方法和实例工厂的区别就是，创建对象的方法他是静态的。
 
 ```java
-package factory;import java.sql.Connection;import java.sql.DriverManager;import java.sql.SQLException;public class StaticConnectionFactory {    public static Connection getConnection() {        Connection connection = null;        try {            Class.forName("com.mysql.cj.jdbc.Driver");            connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/musicianclub",                    "root", "*****");        } catch (ClassNotFoundException e) {            e.printStackTrace();        } catch (SQLException throwables) {            throwables.printStackTrace();        }        return connection;    }}
+package factory;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+public class StaticConnectionFactory {
+  public static Connection getConnection() {
+    Connection connection = null;
+    try {
+      Class.forName("com.mysql.cj.jdbc.Driver");
+      connection = DriverManager.getConnection("jdbc:mysql://localhost:3306/musicianclub",
+                                               "root", "*****");
+    } catch (ClassNotFoundException e) {
+      e.printStackTrace();        
+    } catch (SQLException throwables) {
+      throwables.printStackTrace();        
+    }        
+    return connection;
+  }
+}
 ```
 
 Spring配置文件
 
 ```xml
-<!-- 静态工厂 --><bean id="staticConn" class="factory.StaticConnectionFactory" factory-method="getConnection"></bean>
+<!-- 静态工厂 -->
+<bean id="staticConn" class="factory.StaticConnectionFactory" factory-method="getConnection"></bean>
 ```
 
 测试
 
 ```java
-@Testpublic void testFactory() {  //1.加载我们写的Spring的xml配置文件  ApplicationContext context = new ClassPathXmlApplicationContext("factory.xml");  //2.获取通过配置创建的对象  Connection conn = context.getBean("staticConn", Connection.class);  //获取到对象并使用  System.out.println(conn);}
+@Test
+public void testFactory() {
+  //1.加载我们写的Spring的xml配置文件  
+  ApplicationContext context = new ClassPathXmlApplicationContext("factory.xml");  
+  //2.获取通过配置创建的对象  
+  Connection conn = context.getBean("staticConn", Connection.class);  
+  //获取到对象并使用  
+  System.out.println(conn);
+}
 ```
 
 ### 9.4 Spring工厂对象创建小结
 
 ```markdown
-Spring工厂中存在两种对象		|- 简单对象 ---- <bean id="order">		|- 复杂对象 ---- FactoryBean										实例工厂										静态工厂		====================================	====================================													   											↓创建的方式↓							   													|- 构造注入 ---- <constructor-arg>       ----   JDK内置类型		----  8中基本类型+String									构造也可以ref用户自定义类型											 ----   数组类型																															 ----		Set集合																															 ----		List集合																															 ----		Map集合																															 ----		Properties集合				|- Set方法 ---- <property name="pname"> ----		用户自定义类型	----	自定义类型									属性当然也可以使用JDK内置类型
+Spring工厂中存在两种对象
+|- 简单对象 ---- <bean id="order">
+|- 复杂对象 ---- FactoryBean
+实例工厂
+静态工厂
+====================================	
+====================================													   											
+↓创建的方式↓
+|- 构造注入 
+---- <constructor-arg>       
+----   JDK内置类型
+----  8中基本类型+String 构造也可以ref用户自定义类型
+----   数组类型
+----		Set集合																															 
+----		List集合
+----		Map集合																															 
+----		Properties集合
+
+|- Set方法
+---- <property name="pname"> 
+----	用户自定义类型	
+----	自定义类型
+属性当然也可以使用JDK内置类型
 ```
 
 ## 10 控制Spring工厂创建对象次数
@@ -1186,7 +1964,9 @@ Spring工厂中存在两种对象		|- 简单对象 ---- <bean id="order">		|- �
 Spring的配置
 
 ```xml
- <!-- 用于简单对象的scope --><bean id="account" scope="singleton" class="scope.Account"></bean><bean id="account" scope="prototype" class="scope.Account"></bean>
+ <!-- 用于简单对象的scope -->
+<bean id="account" scope="singleton" class="scope.Account"></bean>
+<bean id="account" scope="prototype" class="scope.Account"></bean>
 ```
 
 那么我们指定了 scope为 singleton，那么Spring工厂创建的对象的次数就为1，如果prototype，那么每次进行获取，都会创建新的Bean对象，singleton是默认的值。
@@ -1198,13 +1978,26 @@ isSingleton()的方法，实例工厂、静态工厂它没有实现了isSingleto
 ### 10.3 控制原因
 
 ```markdown
-有些对象是可以被大家共用的，有的则不，优点就是节省不必要的内存空间的浪费。那么什么样的对象只需要创建一次？		|- SqlSessionFactory		|- Dao对象		|- Service大量都是无状态的哪些对象每次都要创建新的？		|- 连接对象 关乎事务的		|- sqlSession | Session 不可能被共用		|- Struts2 Action
+有些对象是可以被大家共用的，有的则不，优点就是节省不必要的内存空间的浪费。那么什么样的对象只需要创建一次？
+|- SqlSessionFactory		
+|- Dao对象		
+|- Service
+
+大量都是无状态的哪些对象每次都要创建新的？		
+|- 连接对象 关乎事务的		
+|- sqlSession 
+| Session 不可能被共用		
+|- Struts2 Action
 ```
 
 ## 11 对象的生命周期
 
 ```markdown
-1.什么是生命周期啊？		指的是一个对象的创建、存活、消亡的一个完整的过程2.为什么要学习对象的生命周期？		在我们传统的java学习当中，new构造，然后对象没有再被引用，那么久等这个被GC掉		那在我们学习框架的过程中，Bean对象是由Spring框架进行控制的，学习对象在其中的生命周期，那么有利于我们学习好Spring框架
+1.什么是生命周期啊？
+指的是一个对象的创建、存活、消亡的一个完整的过程
+2.为什么要学习对象的生命周期？
+在我们传统的java学习当中，new构造，然后对象没有再被引用，那么久等这个被GC掉
+那在我们学习框架的过程中，Bean对象是由Spring框架进行控制的，学习对象在其中的生命周期，那么有利于我们学习好Spring框架
 ```
 
 ### 11.1 Bean生命周期的三个阶段
@@ -1218,15 +2011,29 @@ isSingleton()的方法，实例工厂、静态工厂它没有实现了isSingleto
      代码印证，lifecycle.xml进行配置
 
      ```xml
-     <!-- singleton Spring工厂创建时，Bean对象就会被创建 --><bean id="product" scope="singleton" class="lifecycle.Product"></bean><bean id="product" scope="prototype" class="lifecycle.Product"></bean>
+     <!-- singleton Spring工厂创建时，Bean对象就会被创建 -->
+     <bean id="product" scope="singleton" class="lifecycle.Product"></bean>
+     <bean id="product" scope="prototype" class="lifecycle.Product"></bean>
      ```
+     
+     
 
      ```java
-     //测试代码@Testpublic void testProductLife() {  ApplicationContext context = new ClassPathXmlApplicationContext("lifecycle.xml");  Product product = context.getBean("product", Product.class);  System.out.println(product);}
+     //测试代码
+     @Test
+     public void testProductLife() {  
+       ApplicationContext context = new ClassPathXmlApplicationContext("lifecycle.xml");  
+       Product product = context.getBean("product", Product.class);  
+       System.out.println(product);
+     }
      ```
-
+     
+     
+     
      ```markdown
-     如果我的Scope="singleton"，但是我们想他也是在我们获取的时候再进行创建！那么，我们可以对spring配置进行修改<bean id="account" scope="singleton" class="scope.Account" lazy-init="true"></bean>lazy-init=true的情况下时，那么Bean对象就在获取的时候，才进行创建！
+     如果我的Scope="singleton"，但是我们想他也是在我们获取的时候再进行创建！那么，我们可以对spring配置进行修改
+     <bean id="account" scope="singleton" class="scope.Account" lazy-init="true"></bean>
+     lazy-init=true的情况下时，那么Bean对象就在获取的时候，才进行创建！
      ```
 
 2. 初始化阶段
@@ -1234,7 +2041,10 @@ isSingleton()的方法，实例工厂、静态工厂它没有实现了isSingleto
    方式一：实现InitializingBean接口
 
    ```markdown
-   Q：什么是初始化阶段？A：Spring工厂在创建完对象之后，调用对象的初始化方法，完成对初始化操作		1.初始化方法的提供：Programer根据需求，提供初始化方法，最终完成初始化操作		2.初始化方法的调用：Spring工厂进行调用
+   Q：什么是初始化阶段？
+   A：Spring工厂在创建完对象之后，调用对象的初始化方法，完成对初始化操作		
+   1.初始化方法的提供：Programer根据需求，提供初始化方法，最终完成初始化操作		
+   2.初始化方法的调用：Spring工厂进行调用
    ```
 
    我们将我们的Bean进行InitializingBean接口的实现
@@ -1242,7 +2052,17 @@ isSingleton()的方法，实例工厂、静态工厂它没有实现了isSingleto
    afterPropertiesSet()
 
    ```java
-   package lifecycle;import org.springframework.beans.factory.InitializingBean;public class Product implements InitializingBean {    public Product() {        System.out.println("Product().....");    }    @Override    public void afterPropertiesSet() throws Exception {        System.out.println("afterPropertiesSet()......");    }}
+   package lifecycle;
+   import org.springframework.beans.factory.InitializingBean;
+   public class Product implements InitializingBean {
+     public Product() {
+       System.out.println("Product().....");    
+     }    
+     @Override
+     public void afterPropertiesSet() throws Exception {
+       System.out.println("afterPropertiesSet()......");
+     }
+   }
    ```
 
    Spring的配置
@@ -1254,7 +2074,14 @@ isSingleton()的方法，实例工厂、静态工厂它没有实现了isSingleto
    测试方法
 
    ```java
-   @Testpublic void testProductLife() {  ApplicationContext context = new ClassPathXmlApplicationContext("lifecycle.xml");  //        Product product = context.getBean("product", Product.class);  //        System.out.println(product);}//执行结果//		Product().....//		afterPropertiesSet()......
+   @Test
+   public void testProductLife() {
+     ApplicationContext context = new ClassPathXmlApplicationContext("lifecycle.xml");          
+     Product product = context.getBean("product", Product.class);  
+     System.out.println(product);}
+   //执行结果
+   //		Product().....
+   //		afterPropertiesSet()......
    ```
 
    这个方式一虽然除了实现InitializingBean的方法就不要做额外的配置了，但是和Spring框架的耦合度太高了
@@ -1264,19 +2091,42 @@ isSingleton()的方法，实例工厂、静态工厂它没有实现了isSingleto
    方式二：对象提供的普通方法
 
    ```java
-   //Person的初始化方法public void initMethod() {  //这时Person的初始化方法  System.out.println("Person的initMethod().....");}
+   //Person的初始化方法
+   public void initMethod() {  
+     //这时Person的初始化方法  
+     System.out.println("Person的initMethod().....");
+   }
    ```
 
    Spring配置
 
    ```xml
-   <bean id="person" class="lifecycle.Person" init-method="initMethod">  <property name="name" value="Senner Ming"></property>  <property name="age" value="18"></property></bean>
+   <bean id="person" class="lifecycle.Person" init-method="initMethod">  
+     <property name="name" value="Senner Ming"></property>  
+     <property name="age" value="18"></property>
+   </bean>
    ```
 
    就普通的测试方法
 
    ```markdown
-   问题来了		1.如果一个对象实现了InitializingBean的接口，同时又提供了自定义的初始化方法，那么执行的顺序是怎样的？				答案：先执行了InitializingBean的接口实现，然后再实现了自定义的初始化方法，参考lifecycle.xml				 		2.Spring在创建完对象，是先进行注入，还是先进行初始化？				答案：先进行注入						Product().....						setName()......						afterPropertiesSet()......						myInit....								3.什么是初始化操作？				答案：主要是一些对资源的初始化，数据库 IO 网络 ....					Servlet{						init(ServletConfig){}						service()					}
+   问题来了		
+   1.如果一个对象实现了InitializingBean的接口，同时又提供了自定义的初始化方法，那么执行的顺序是怎样的？				
+   答案：先执行了InitializingBean的接口实现，然后再实现了自定义的初始化方法，参考lifecycle.xml
+   
+   2.Spring在创建完对象，是先进行注入，还是先进行初始化？
+   答案：先进行注入
+   Product().....
+   setName()......
+   afterPropertiesSet()......
+   myInit....
+   
+   3.什么是初始化操作？
+   答案：主要是一些对资源的初始化，数据库 IO 网络 ....
+   Servlet{
+   init(ServletConfig){}
+   service()
+   }
    ```
 
    
@@ -1284,43 +2134,121 @@ isSingleton()的方法，实例工厂、静态工厂它没有实现了isSingleto
 3. 销毁阶段
 
    ```markdown
-   Spring销毁对象前，会调用对象的销毁方法，完成销毁操作1.Spring什么时候销毁所创建的对象呢？答：applicationContext.close();也就是说是应用上下文关闭之前2.销毁方法：程序猿根据自己的需求，定义销毁方法， 完成销毁操作答：调用：Spring工厂完成调用
-   ```
-
-   那么如何定义自己的销毁方法呢？
-
-   方式一：实现DisposableBean，还是一样，和初始化方式一样，这种方式和Spring的都和比较强
-
-   ```java
-   package lifecycle;import org.springframework.beans.factory.DisposableBean;import org.springframework.beans.factory.InitializingBean;public class Product implements InitializingBean, DisposableBean {    private String name;    public String getName() {        return name;    }    public void setName(String name) {        System.out.println("setName()......");        this.name = name;    }    public Product() {        System.out.println("Product().....");    }    public void myInit() {        System.out.println("myInit....");    }    @Override    public void afterPropertiesSet() throws Exception {        System.out.println("afterPropertiesSet()......");    }    @Override    public void destroy() throws Exception {        System.out.println("destroy().....");    }}
-   ```
-
-   测试方法
-
-   ```java
-   @Testpublic void testProductLife() {  ApplicationContext context = new ClassPathXmlApplicationContext("lifecycle.xml");  Product product = context.getBean("product", Product.class);  System.out.println(product);  ((ClassPathXmlApplicationContext) context).close();}
-   ```
-
+   Spring销毁对象前，会调用对象的销毁方法，完成销毁操作
+   1.Spring什么时候销毁所创建的对象呢？
+   答：applicationContext.close();也就是说是应用上下文关闭之前
    
-
-   方式二：自己定义，并在Spring配置文件中进行配置
-
+   2.销毁方法：程序猿根据自己的需求，定义销毁方法， 完成销毁操作
+   答：调用：Spring工厂完成调用
+   ```
+   
+   那么如何定义自己的销毁方法呢？
+   
+   方式一：实现DisposableBean，还是一样，和初始化方式一样，这种方式和Spring的都和比较强
+   
    ```java
-   package lifecycle;import org.springframework.beans.factory.DisposableBean;import org.springframework.beans.factory.InitializingBean;public class Product implements InitializingBean, DisposableBean {    private String name;    public String getName() {        return name;    }    public void setName(String name) {        System.out.println("setName()......");        this.name = name;    }    public Product() {        System.out.println("Product().....");    }    public void myInit() {        System.out.println("myInit....");    }    @Override    public void afterPropertiesSet() throws Exception {        System.out.println("afterPropertiesSet()......");    }    public void myDestroy() {        System.out.println("Destroy()....");    }    @Override    public void destroy() throws Exception {        System.out.println("destroy().....");    }}
+   package lifecycle;
+   import org.springframework.beans.factory.DisposableBean;
+   import org.springframework.beans.factory.InitializingBean;
+   public class Product implements InitializingBean, DisposableBean {
+     private String name;    
+     public String getName() {
+       return name;    
+     }    
+     public void setName(String name) {
+       System.out.println("setName()......");
+       this.name = name;    
+     }    
+     public Product() {
+       System.out.println("Product().....");
+     }    
+     public void myInit() {
+       System.out.println("myInit....");
+     }    
+   	@Override
+     public void afterPropertiesSet() throws Exception {
+       System.out.println("afterPropertiesSet()......");
+     }    
+     @Override
+     public void destroy() throws Exception {
+       System.out.println("destroy().....");
+     }
+   }
    ```
-
+   
+   测试方法
+   
+   ```java
+   @Test
+   public void testProductLife() {
+     ApplicationContext context = new ClassPathXmlApplicationContext("lifecycle.xml");  
+     Product product = context.getBean("product", Product.class);  
+     System.out.println(product);  
+     ((ClassPathXmlApplicationContext) context).close();
+   }
+   ```
+   
+   
+   
+   方式二：自己定义，并在Spring配置文件中进行配置
+   
+   ```java
+   package lifecycle;
+   import org.springframework.beans.factory.DisposableBean;
+   import org.springframework.beans.factory.InitializingBean;
+   public class Product implements InitializingBean, DisposableBean {
+     private String name;
+     public String getName() {
+       return name;
+     }    
+     public void setName(String name) {
+       System.out.println("setName()......");
+       this.name = name;    
+     }    
+     public Product() {
+       System.out.println("Product().....");
+     }    
+     public void myInit() {
+       System.out.println("myInit....");
+     }    
+     @Override
+     public void afterPropertiesSet() throws Exception {
+       System.out.println("afterPropertiesSet()......");
+     }    
+     public void myDestroy() {
+       System.out.println("Destroy()....");
+     }    
+     @Override
+     public void destroy() throws Exception {
+       System.out.println("destroy().....");
+     }
+   }
+   ```
+   
    这样的话就要在Spring配置文件中进行配置了
-
+   
    ```xml
-   <!-- singleton Spring工厂创建时，Bean对象就会被创建 --><bean id="product" scope="singleton" class="lifecycle.Product" init-method="myInit" destroy-method="myDestroy">  <property name="name" value="SennerMing"/> <!-- 注入一定发生在初始化之前 --></bean>
+   <!-- singleton Spring工厂创建时，Bean对象就会被创建 -->
+   <bean id="product" scope="singleton" class="lifecycle.Product" init-method="myInit" destroy-method="myDestroy">  
+     <property name="name" value="SennerMing"/> 
+     <!-- 注入一定发生在初始化之前 -->
+   </bean>
    ```
-
+   
    ```markdown
-   注意：		那么问题来了，实现DisposableBean和自定义销毁方法，同时存在，执行的顺序是！		1.DisposableBean		2.自定义的销毁方法
+   注意：		
+   那么问题来了，实现DisposableBean和自定义销毁方法，同时存在，执行的顺序是！
+   1.DisposableBean
+   2.自定义的销毁方法
    ```
-
+   
+   
+   
    ```markdown
-   细节：		销毁方法的操作，只使用于scope=singleton的情况下，初始化操作的话，scope=singleton和prototype都适用				1.什么叫销毁操作？		答：销毁操作，主要就是资源的释放操作，像是io.close()、connection.close()；		
+   细节：		
+   销毁方法的操作，只使用于scope=singleton的情况下，初始化操作的话，scope=singleton和prototype都适用
+   1.什么叫销毁操作？		
+   答：销毁操作，主要就是资源的释放操作，像是io.close()、connection.close()；		
    ```
 
 ### 11.2 生命周期小结
@@ -1336,7 +2264,18 @@ isSingleton()的方法，实例工厂、静态工厂它没有实现了isSingleto
 ## 12 配置文件参数化
 
 ```markdown
-配置文件参数化指的就是，把Spring配置文件中需要经常修改的字符串信息，转移到一个更小的配置文件当中1.Spring的配置文件中存在需要经常修改的字符串？		存在的，以数据库连接相关的参数作为代表		2.为什么要转移？		那么这么多的配置信息，放在Spring的配置文件中，是能实现功能，但是对于维护来说，这就不一定是个好点子了！		不利于项目的维护（修改），运维大哥去xml中几千行代码里面去找这个数据库连接，进行修改，啧啧啧		3.更小的配置文件到底是个什么形式？		配置文件参数化，k-v键值对的方式，一般都是像properties文件，那么这个运维大哥修改的地方就局限到这个小小的		文件当中了，即使修改错了，也就改了这些东西，很好定位，很好解决。		配置文件参数化：利于Spring配置文件的维护（修改）
+配置文件参数化指的就是，把Spring配置文件中需要经常修改的字符串信息，转移到一个更小的配置文件当中
+1.Spring的配置文件中存在需要经常修改的字符串？		
+存在的，以数据库连接相关的参数作为代表		
+
+2.为什么要转移？
+那么这么多的配置信息，放在Spring的配置文件中，是能实现功能，但是对于维护来说，这就不一定是个好点子了！
+不利于项目的维护（修改），运维大哥去xml中几千行代码里面去找这个数据库连接，进行修改，啧啧啧		
+
+3.更小的配置文件到底是个什么形式？
+配置文件参数化，k-v键值对的方式，一般都是像properties文件，那么这个运维大哥修改的地方就局限到这个小小的
+文件当中了，即使修改错了，也就改了这些东西，很好定位，很好解决。
+配置文件参数化：利于Spring配置文件的维护（修改）
 ```
 
 ### 12.1 配置文件参数开发
@@ -1346,7 +2285,12 @@ isSingleton()的方法，实例工厂、静态工厂它没有实现了isSingleto
 引入Druid的jar包
 
 ```xml
-<!-- https://mvnrepository.com/artifact/com.alibaba/druid --><dependency>  <groupId>com.alibaba</groupId>  <artifactId>druid</artifactId>  <version>1.2.5</version></dependency>
+<!-- https://mvnrepository.com/artifact/com.alibaba/druid -->
+<dependency>
+  <groupId>com.alibaba</groupId>
+  <artifactId>druid</artifactId>
+  <version>1.2.5</version>
+</dependency>
 ```
 
 jdbc.properties，文件的名字和放置的位置都随便
@@ -1358,7 +2302,14 @@ prop.driverClass=com.mysql.jdbc.Driverprop.url=jdbc:mysql://localhost:3306/music
 将properties引入到Spring的配置文件当中，首先加入context标签
 
 ```xml
-<!-- resources/下面的文件 可以参照target/classes/的路径 内容相同 --><context:property-placeholder location="classpath:jdbc.properties"></context:property-placeholder><bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">    <property name="driverClassName" value="${prop.driverClass}"></property>    <property name="url" value = "${prop.url}"></property>    <property name="username" value="${prop.userName}"></property>    <property name="password" value="${prop.password}"></property></bean>
+<!-- resources/下面的文件 可以参照target/classes/的路径 内容相同 -->
+<context:property-placeholder location="classpath:jdbc.properties"></context:property-placeholder>
+<bean id="dataSource" class="com.alibaba.druid.pool.DruidDataSource">
+  <property name="driverClassName" value="${prop.driverClass}"></property>
+  <property name="url" value = "${prop.url}"></property>
+  <property name="username" value="${prop.userName}"></property>
+  <property name="password" value="${prop.password}"></property>
+</bean>
 ```
 
 ## 13 类型转换器
@@ -1366,7 +2317,22 @@ prop.driverClass=com.mysql.jdbc.Driverprop.url=jdbc:mysql://localhost:3306/music
 ### 13.1 内置类型转换器的理解
 
 ```markdown
-了解个大概：    像我们之前的    <bean id="p" class="xxx.xxx.Person">      <property name="id" value="1"></property>      <property name="name" value="SennerMing"></property>    </bean>    为什么能进行正确的赋值呢？    答：那么Spring在进行Bean的属性主语的时候，是先过了一遍Spring工厂的内置类型转换器    过程就是：    Converter          |- StringToNumber                          |- NumberUtils.parseNumber()                String -------->   Number    作用：    		Spring通过类型转换器，把配置文件中的字符串类型的数据，转换成了对象中成员变量对应类型的数据，从而进行赋值操作
+了解个大概：
+像我们之前的    
+<bean id="p" class="xxx.xxx.Person">
+<property name="id" value="1"></property>
+<property name="name" value="SennerMing"></property>
+</bean>
+为什么能进行正确的赋值呢？    
+答：那么Spring在进行Bean的属性主语的时候，是先过了一遍Spring工厂的内置类型转换器
+过程就是：
+Converter
+|- StringToNumber
+|- NumberUtils.parseNumber()
+String -------->   Number    
+
+作用：
+Spring通过类型转换器，把配置文件中的字符串类型的数据，转换成了对象中成员变量对应类型的数据，从而进行赋值操作
 ```
 
 ### 13.2 自定义类型转换器
@@ -1378,19 +2344,47 @@ prop.driverClass=com.mysql.jdbc.Driverprop.url=jdbc:mysql://localhost:3306/music
 现实案例：
 
 ```xml
-<bean id="alienware" class="converter.Alienware">  <property name="name" value="SennerMingAli"/>  <property name="birthday" value="2021-05-30"/></bean>
+<bean id="alienware" class="converter.Alienware">
+  <property name="name" value="SennerMingAli"/>
+  <property name="birthday" value="2021-05-30"/>
+</bean>
 ```
 
 Bean对象
 
 ```java
-package converter;import java.io.Serializable;import java.util.Date;public class Alienware implements Serializable {    private String name;    private Date birthday;    public String getName() {        return name;    }    public void setName(String name) {        this.name = name;    }    public Date getBirthday() {        return birthday;    }    public void setBirthday(Date birthday) {        this.birthday = birthday;    }}
+package converter;
+import java.io.Serializable;
+import java.util.Date;
+public class Alienware implements Serializable {
+  private String name;
+  private Date birthday;
+  public String getName() {
+    return name;    
+  }    
+  public void setName(String name) {
+    this.name = name;
+  }    
+  public Date getBirthday() {
+    return birthday;
+  }    
+  public void setBirthday(Date birthday) {
+    this.birthday = birthday;    
+  }
+}
 ```
 
 测试代码
 
 ```java
-@Testpublic void testConverter() {  ApplicationContext context = new ClassPathXmlApplicationContext("converter.xml");  Alienware alienware = context.getBean("alienware", Alienware.class);  System.out.println(alienware);}//然后就报错了//Failed to instantiate [java.util.Date]: Constructor threw exception;
+@Test
+public void testConverter() {
+  ApplicationContext context = new ClassPathXmlApplicationContext("converter.xml");
+  Alienware alienware = context.getBean("alienware", Alienware.class);
+  System.out.println(alienware);
+}
+//然后就报错了
+//Failed to instantiate [java.util.Date]: Constructor threw exception;
 ```
 
 那么这样，Spring它没有提供日期类型的转换器，各个国家显示的时间格式他是不同的，所以他并不内置日期转换器喔
@@ -1402,7 +2396,39 @@ package converter;import java.io.Serializable;import java.util.Date;public class
 1.实现Converter接口
 
 ```java
-package converter;import org.springframework.core.convert.converter.Converter;import java.text.ParseException;import java.text.SimpleDateFormat;import java.util.Date;//Converter<原始类型，目标类型>public class MyDateConverter implements Converter<String, Date> {    /**     * 核心的作用就是     *      String ---> Date     *      将我们配置文件中的String类型转换成我们要的Date类型     * 那么问题来了:     * 1.我们怎么才能从配置文件中获得我们的日期格式的字符串呢？     * 答：这个@param s，就是配置文件中的日期格式的字符串了，Spring框架会为我们提供的     *     * 2.那么我们怎么才能将根据日期格式的字符串用我们的代码转换好的日期类型，填到对应Bean的属性值中呢？     * 答：这个Spring也帮我们处理好了，我们将转换好的日期类型，作为返回值进行返回，那么Spring就会自动的进行属性值得注入操作     *      其实呢就是，接口方法的回调！     * @param s     * @return     */    @Override    public Date convert(String s) {        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");        Date date = null;        try {            date = sdf.parse(s);        } catch (ParseException e) {            e.printStackTrace();        }        return date;    }}
+package converter;
+import org.springframework.core.convert.converter.Converter;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+//Converter<原始类型，目标类型>
+public class MyDateConverter implements Converter<String, Date> {
+  /**     
+  * 核心的作用就是     
+  *      String ---> Date
+  *      将我们配置文件中的String类型转换成我们要的Date类型
+  * 那么问题来了:     
+  * 1.我们怎么才能从配置文件中获得我们的日期格式的字符串呢？     
+  * 答：这个@param s，就是配置文件中的日期格式的字符串了，Spring框架会为我们提供的     
+  *     
+  * 2.那么我们怎么才能将根据日期格式的字符串用我们的代码转换好的日期类型，填到对应Bean的属性值中呢？     
+  * 答：这个Spring也帮我们处理好了，我们将转换好的日期类型，作为返回值进行返回，那么Spring就会自动的进行属性值得注入操作
+  *      其实呢就是，接口方法的回调！     
+  * @param s     
+  * @return     
+  */    
+  @Override
+  public Date convert(String s) {
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+    Date date = null;
+        try {
+          date = sdf.parse(s);
+        } catch (ParseException e) {
+          e.printStackTrace();        
+        }        
+    return date;    
+  }
+}
 ```
 
 那么这个Converter我们是写好了，但是我们得让Spring框架得知道我们写的这个转换器啊
@@ -1410,23 +2436,87 @@ package converter;import org.springframework.core.convert.converter.Converter;im
 2.Spring配置文件进行配置
 
 ```markdown
-第一步：让Spring将MyDateConverter对象创建出来			<bean id="myDateConverter" class="converter.MyDateConverter"></bean>第二步：告诉Spring框架，我们所创建的这个MyDateConverter是一个类型转换器			Spring为我们准备了yigeConversionServiceFactoryBean来处理我们自定义的这些转换器			<bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">        <property name="converters">            <set>                <ref bean="myDateConverter"></ref>            </set>        </property>    </bean>
+第一步：让Spring将MyDateConverter对象创建出来
+<bean id="myDateConverter" class="converter.MyDateConverter"></bean>
+
+第二步：告诉Spring框架，我们所创建的这个MyDateConverter是一个类型转换器
+Spring为我们准备了yigeConversionServiceFactoryBean来处理我们自定义的这些转换器
+<bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">
+<property name="converters">
+	<set>
+	<ref bean="myDateConverter"></ref>
+	</set>
+</property>
+</bean>
 ```
 
 自定义转换器
 
 ```java
-package converter;import org.springframework.core.convert.converter.Converter;import java.text.ParseException;import java.text.SimpleDateFormat;import java.util.Date;//Converter<原始类型，目标类型>public class MyDateConverter implements Converter<String, Date> {	//进行改进  private String pattern;    /**     * 核心的作用就是     *      String ---> Date     *      将我们配置文件中的String类型转换成我们要的Date类型     * 那么问题来了:     * 1.我们怎么才能从配置文件中获得我们的日期格式的字符串呢？     * 答：这个@param s，就是配置文件中的日期格式的字符串了，Spring框架会为我们提供的     *     * 2.那么我们怎么才能将根据日期格式的字符串用我们的代码转换好的日期类型，填到对应Bean的属性值中呢？     * 答：这个Spring也帮我们处理好了，我们将转换好的日期类型，作为返回值进行返回，那么Spring就会自动的进行属性值得注入操作     *      其实呢就是，接口方法的回调！     * @param s     * @return     */    @Override    public Date convert(String s) {        SimpleDateFormat sdf = new SimpleDateFormat(pattern);        Date date = null;        try {            date = sdf.parse(s);        } catch (ParseException e) {            e.printStackTrace();        }        return date;    }}
+package converter;
+import org.springframework.core.convert.converter.Converter;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+//Converter<原始类型，目标类型>
+public class MyDateConverter implements Converter<String, Date> {
+  //进行改进  private String pattern;
+  /**     
+  * 核心的作用就是     
+  *      String ---> Date     
+  *      将我们配置文件中的String类型转换成我们要的Date类型     
+  * 那么问题来了:     
+  * 1.我们怎么才能从配置文件中获得我们的日期格式的字符串呢？     
+  * 答：这个@param s，就是配置文件中的日期格式的字符串了，Spring框架会为我们提供的     
+  *     
+  * 2.那么我们怎么才能将根据日期格式的字符串用我们的代码转换好的日期类型，填到对应Bean的属性值中呢？     
+  * 答：这个Spring也帮我们处理好了，我们将转换好的日期类型，作为返回值进行返回，那么Spring就会自动的进行属性值得注入操作     
+  *      其实呢就是，接口方法的回调！     
+  * @param s     
+  * @return     
+  */    
+  @Override    
+  public Date convert(String s) {
+    SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+    Date date = null;
+    try {
+      date = sdf.parse(s);
+    } catch (ParseException e) {
+      e.printStackTrace();
+    }        
+    return date;
+  }
+}
 ```
 
 Spring配置
 
 ```xml
-<!-- 完整配置 --><!-- 第一步，我们先将我们自己写的日期格式转换器在咱们的这个Spring框架中构造出来 --><!-- <bean id="myDateConverter" class="converter.MyDateConverter"></bean> --><!-- 这种方式耦合度太高了，直接写在了程序里面了，这个可不好啊 --><bean id="myDateConverter" class="converter.MyDateConverter">	<property name="pattern" value="yyyy-MM-dd"></property></bean><!-- 第二步，我们要将我们的自定义转换器赋给我们的这个Spring的转换器工厂，这个ID必须是这个 --><bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">  <property name="converters">    <set>      <ref bean="myDateConverter"></ref>    </set>  </property></bean><bean id="alienware" class="converter.Alienware">  <property name="name" value="SennerMingAli"/>  <property name="birthday" value="2021-05-30"/></bean>
+<!-- 完整配置 -->
+<!-- 第一步，我们先将我们自己写的日期格式转换器在咱们的这个Spring框架中构造出来 -->
+<!-- <bean id="myDateConverter" class="converter.MyDateConverter"></bean> -->
+<!-- 这种方式耦合度太高了，直接写在了程序里面了，这个可不好啊 -->
+<bean id="myDateConverter" class="converter.MyDateConverter">	
+  <property name="pattern" value="yyyy-MM-dd"></property>
+</bean>
+<!-- 第二步，我们要将我们的自定义转换器赋给我们的这个Spring的转换器工厂，这个ID必须是这个 -->
+<bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">  
+  <property name="converters">
+    <set>
+      <ref bean="myDateConverter"></ref>
+    </set>  
+  </property>
+</bean>
+
+<bean id="alienware" class="converter.Alienware">
+  <property name="name" value="SennerMingAli"/>
+  <property name="birthday" value="2021-05-30"/>
+</bean>
 ```
 
 ```markdown
-需要注意的一些细节：	我们其他的一些Bean的类型，id的值我们都是随便写的，但是其实这个ConversionServiceFactoryBean的话，就不行，这个类的id的值，必须是conversionService，不能是其他的！
+需要注意的一些细节：	
+我们其他的一些Bean的类型，id的值我们都是随便写的，但是其实这个ConversionServiceFactoryBean的话，就不行，这个类的id的值，必须是conversionService，不能是其他的！
 ```
 
 其实啊，Spring中已经内置了一个日期类型的转换器了
@@ -1444,13 +2534,33 @@ BeanPostProcessor作用：对Spring工厂所创建的对象，进行再加工Spr
 Spring工厂对Bean的构造，我们再来复习一遍
 
 ```markdown
-1. 构造的步骤：答： ApplicatinContext中的配置文件		<bean id="bean" class="xxx.xx.Bean"></bean>	1. Spring调用构造方法	2. InitialzingBean	3. initMethod="myInit"	4. ctx.getBean("bean")2. 那么我们怎么理解这个后置处理器呢？答：Bean就像果园里面的苹果，在果园把苹果养成，创建好了，我们果农还要对苹果进行打蜡什么的处理，让苹果看上去更好，或者做一些处理，让苹果更可口，那么我们的后置处理器在Spring工厂中，就扮演着果农的角色
+1. 构造的步骤：
+答： ApplicatinContext中的配置文件		
+<bean id="bean" class="xxx.xx.Bean"></bean>
+1. Spring调用构造方法	
+2. InitialzingBean	
+3. initMethod="myInit"	
+4. ctx.getBean("bean")
+
+2. 那么我们怎么理解这个后置处理器呢？
+答：Bean就像果园里面的苹果，在果园把苹果养成，创建好了，我们果农还要对苹果进行打蜡什么的处理，让苹果看上去更好，或者做一些处理，让苹果更可口，那么我们的后置处理器在Spring工厂中，就扮演着果农的角色
 ```
 
 那我们将BeanPostProcessor放到Spring工厂中进行理解
 
 ```markdown
-1. 加入BeanPostProcessor后，Bean的构造的步骤		ApplicationContext		<bean id="bean" class="xxx.xx.Bean"></bean>		1.Spring调用构造方法		2.那么我们在构造好了Bean之后，我们并不直接交给Spring进行初始化的一些操作了，而是交给BeanPostProcessor，会调用该processor中的Object postProcessBeforeInitialization(Object bean,String beanName);进行初始化完成之前的Bean的加工操作，bean就是这个构造好的Bean，beanName就是<bean>标签中的id的值，返回的Object就是我们加工完成的Bean对象		3.接着postProcessBeforeInitialization返回的Bean对象就交到了咱么的这个InitializingBean进行初始化操作		4.然后才到initMethod="myInit"		5.初始化完成之后，又将完成初始化操作的Bean交到咱们的BeanPostProcessor的Object postProcessAfterInitialization(Object bean,String beanName);进行初始化完成后的Bean的加工操作
+1. 加入BeanPostProcessor后，Bean的构造的步骤
+ApplicationContext		
+<bean id="bean" class="xxx.xx.Bean"></bean>		
+1.Spring调用构造方法
+
+2.那么我们在构造好了Bean之后，我们并不直接交给Spring进行初始化的一些操作了，而是交给BeanPostProcessor，会调用该processor中的Object postProcessBeforeInitialization(Object bean,String beanName);进行初始化完成之前的Bean的加工操作，bean就是这个构造好的Bean，beanName就是<bean>标签中的id的值，返回的Object就是我们加工完成的Bean对象		
+
+3.接着postProcessBeforeInitialization返回的Bean对象就交到了咱么的这个InitializingBean进行初始化操作		
+
+4.然后才到initMethod="myInit"		
+
+5.初始化完成之后，又将完成初始化操作的Bean交到咱们的BeanPostProcessor的Object postProcessAfterInitialization(Object bean,String beanName);进行初始化完成后的Bean的加工操作
 ```
 
 我们可爱的程序猿需要实现BeanPostProcessor的这个接口：
@@ -1478,7 +2588,39 @@ Spring工厂对Bean的构造，我们再来复习一遍
 1.实现BeanPostProcessor这个接口
 
 ```java
-package beanpost;import org.springframework.beans.BeansException;import org.springframework.beans.factory.config.BeanPostProcessor;//实现了BeanPostProcessor，且没有实现任何方法，他竟然没有任何报错，你受得了吗//这是JDK1.8之后的新特性 default函数public class MyBeanPostProcessor implements BeanPostProcessor {    /**     * 这个还是要注意，一定要把这个Bean进行返回     * @param bean     * @param beanName     * @return     * @throws BeansException     */    @Override    public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {        return bean;    }    /**     * 我们就实现一个就得了     * @param bean     * @param beanName     * @return     * @throws BeansException     */    @Override    public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {        if (bean instanceof Category) {            Category category = (Category) bean;            category.setName("小王");        }        return bean;    }}
+package beanpost;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.BeanPostProcessor;
+//实现了BeanPostProcessor，且没有实现任何方法，他竟然没有任何报错，你受得了吗
+//这是JDK1.8之后的新特性 default函数
+public class MyBeanPostProcessor implements BeanPostProcessor {    
+  /**     
+  * 这个还是要注意，一定要把这个Bean进行返回
+  * @param bean
+  * @param beanName
+  * @return     
+  * @throws BeansException
+  */    
+  @Override
+  public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+    return bean;    
+  }    
+  /**     
+  * 我们就实现一个就得了
+  * @param bean
+  * @param beanName
+  * @return     
+  * @throws BeansException
+  */    
+  @Override
+  public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+    if (bean instanceof Category) {
+      Category category = (Category) bean;
+      category.setName("小王");
+    }        
+    return bean;
+  }
+}
 ```
 
 
@@ -1486,13 +2628,22 @@ package beanpost;import org.springframework.beans.BeansException;import org.spri
 2.需要在Spring的配置文件中进行配置
 
 ```xml
-<bean id="myBeanPostProcessor" class="beanpost.MyBeanPostProcessor"></bean><bean id="category" class="beanpost.Category">  <property name="id" value="10"/>  <property name="name" value="SennerMing"/></bean>
+<bean id="myBeanPostProcessor" class="beanpost.MyBeanPostProcessor"></bean>
+<bean id="category" class="beanpost.Category">
+  <property name="id" value="10"/>
+  <property name="name" value="SennerMing"/>
+</bean>
 ```
 
 3.进行测试
 
 ```java
-@Testpublic void testMyBeanPostProcessor() {  ApplicationContext applicationContext = new ClassPathXmlApplicationContext("beanpost.xml");  Category category = applicationContext.getBean("category", Category.class);  System.out.println(category.getName());}
+@Test
+public void testMyBeanPostProcessor() {
+  ApplicationContext applicationContext = new ClassPathXmlApplicationContext("beanpost.xml");
+  Category category = applicationContext.getBean("category", Category.class);
+  System.out.println(category.getName());
+}
 ```
 
 在开发中需要注意的小细节
@@ -1510,18 +2661,38 @@ Spring与日志框架进行整合，日志框架就可以在控制台中，输�
 Spring如何整合日志框架？
 
 ```mark
-默认：		早期的Spring1.2.3都是与commons-loggin.jar进行整合的		Spring5.x默认整合的日志框架有 logback log4j2整合Log4j:		1.引入相关jar包		2.引入log4j.properties的配置文件
+默认：
+早期的Spring1.2.3都是与commons-loggin.jar进行整合的
+Spring5.x默认整合的日志框架有 logback log4j2
+
+整合Log4j:		
+1.引入相关jar包
+2.引入log4j.properties的配置文件
 ```
 
 依赖
 
 ```xml
-<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12 为了覆盖默认的--><dependency>    <groupId>org.slf4j</groupId>    <artifactId>slf4j-log4j12</artifactId>    <version>1.8.0-alpha0</version>    <scope>test</scope></dependency><!-- https://mvnrepository.com/artifact/log4j/log4j --><dependency>    <groupId>log4j</groupId>    <artifactId>log4j</artifactId>    <version>1.2.17</version></dependency>
+<!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-log4j12 为了覆盖默认的-->
+<dependency>
+  <groupId>org.slf4j</groupId>
+  <artifactId>slf4j-log4j12</artifactId>
+  <version>1.8.0-alpha0</version>
+  <scope>test</scope>
+</dependency>
+<!-- https://mvnrepository.com/artifact/log4j/log4j --><dependency>
+  <groupId>log4j</groupId>
+  <artifactId>log4j</artifactId>
+  <version>1.2.17</version>
+</dependency>
 ```
 
 log4j.properties
 
 ```properties
-#resource文件夹根目录下### 配置根log4j.rootLogger=debug,console### 日志输出到控制台显示log4j.appender.console=org.apache.log4j.ConsoleAppenderlog4j.appender.console.Target=System.outlog4j.appender.console.layout=org.apache.log4j.PatternLayoutlog4j.appender.console.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n
+#resource文件夹根目录下### 配置根log4j.rootLogger=debug,console### 日志输出到控制台显示log4j.appender.console=org.apache.log4j.ConsoleAppender
+log4j.appender.console.Target=System.out
+log4j.appender.console.layout=org.apache.log4j.PatternLayout
+log4j.appender.console.layout.ConversionPattern=%d{yyyy-MM-dd HH:mm:ss} %-5p %c{1}:%L - %m%n
 ```
 

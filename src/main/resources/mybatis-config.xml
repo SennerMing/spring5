@@ -49,7 +49,7 @@
             <dataSource type="POOLED">
                 <property name="driver" value="${prop.driverClass}"/>
                 <property name="url" value="${prop.url}"/>
-                <property name="username" value="${prop.userName}"/>
+                <property name="username" value="${prop.username}"/>
                 <property name="password" value="${prop.password}"/>
             </dataSource>
         </environment>

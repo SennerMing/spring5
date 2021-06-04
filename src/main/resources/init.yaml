@@ -1,0 +1,8 @@
+account:
+  name: SennerMing
+  password: 123456
+#  list:
+#    - 1111
+#    - 2222
+#  如果使用PropertySourcePlaceholderConfigurer的话得使用下面的形式，然后自己进行开发
+  list: 111,222
